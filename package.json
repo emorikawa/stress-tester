@@ -9,8 +9,11 @@
   },
   "isOptional": true,
   "windowTypes": {
-    "default": true,
     "work": true
   },
-  "license": "GPL-3.0"
+  "license": "GPL-3.0",
+  "dependencies": {
+    "googleapis": "x.x.x",
+    "google-auth-library": "x.x.x"
+  }
 }
