@@ -1,0 +1,16 @@
+{
+  "name": "stress-tester",
+  "title":"Stress Tester",
+  "description": "An N1 Stress Tester",
+  "main": "./lib/main",
+  "version": "0.1.0",
+  "engines": {
+    "nylas": ">=0.4.0"
+  },
+  "isOptional": true,
+  "windowTypes": {
+    "default": true,
+    "work": true
+  },
+  "license": "GPL-3.0"
+}
