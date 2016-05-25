@@ -1,5 +1,7 @@
 var credentials = require('./credentials.js');
 var nylas = require('nylas').with(credentials.nylas.token)
+var nylasgmail = require('nylas').with(credentials.nylas.gmail)
+var nylasimap = require('nylas').with(credentials.nylas.imap)
 var gmail = require('googleapis').gmail('v1');
 var Imap = require('imap')
 
@@ -82,16 +84,6 @@ function getCursor() {
     })
   })
 }
-//
-// function setupImap() {
-//   return new Promise(function(resolve, reject) {
-//     imap.once('ready', function(){
-//       return resolve(imap)
-//     })
-//     imap.once('error', reject)
-//     imap.connect();
-//   });
-// }
 
 function setup() {
   return imapConnect().then(getCursor).then(function(cursor) {
@@ -99,6 +91,8 @@ function setup() {
       imap: imap,
       gmail: gmail,
       nylas: nylas,
+      nylasgmail: nylasgmail,
+      nylasimap: nylasimap,
       cursor: cursor,
     })
   })

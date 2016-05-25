@@ -265,7 +265,7 @@ var setupFn = require('./setup')
 setupFn().then(function(setup) {
   var adapters = require('./adapters.js')(setup);
 
-  currentAdapter = adapters.imap
+  currentAdapter = adapters.gmail
 
   var stream = setup.nylas.deltas.startStream(setup.cursor, [],
     {exclude_folders: false});
