@@ -123,7 +123,7 @@ function checkStageAdvance() {
 
 function processDelta(delta) {
   try {
-    if (delta.object === 'label') {
+    if (delta.object === "label" || delta.object === "folder") {
       var stage = delta.event;
       if (STAGES.indexOf(delta.event) === -1) {
         console.error("XXX> Unsupported delta event", delta.event, delta);
@@ -151,6 +151,7 @@ function processDelta(delta) {
           return;
         }
         var labelName = delta.attributes.display_name;
+        runData.labelData[labelName][dataKey].id = delta.attributes.id
       }
 
       var data = runData.labelData[labelName][stage]
@@ -222,14 +223,14 @@ function runDelete(adapter) {
 
     var data = runData.labelData[labelName].delete;
 
-    var remoteId = runData.labelData[labelName][dataKey].id
-    if (!remoteId) {
+    var remoteData = runData.labelData[labelName][dataKey]
+    if (!remoteData) {
       console.error("XXX> Can't find "+adapter.name+" data and id for", labelName);
       return
     }
 
     data[startKey] = Date.now();
-    adapter.deleteLabel(remoteId)
+    adapter.deleteLabel(remoteData)
     .then(function(){
       data[endKey] = Date.now();
       data[timeKey] = data[endKey] - data[startKey]
@@ -246,14 +247,14 @@ function runDelete(adapter) {
 }
 
 function cleanup(adapter) {
-  console.log("---> Cleaning up N1-Stress-Test labels on Gmail")
+  console.log("---> Cleaning up N1-Stress-Test categories on "+adapter.name)
   adapter.list().then(function(labels) {
     var toDelete = labels.filter(function(label){
       return (/N1-Stress-Test/.test(label.name))
     })
-    console.log("---> Found "+toDelete.length+" labels to delete")
+    console.log("---> Found "+toDelete.length+" categories to delete")
     toDelete.forEach(function(label) {
-      adapter.deleteLabel(label.id).then(function(){
+      adapter.deleteLabel(label).then(function(){
         console.log("---> DELETED ", label.name)
       }).catch(console.error)
     })
@@ -264,7 +265,7 @@ var setupFn = require('./setup')
 setupFn().then(function(setup) {
   var adapters = require('./adapters.js')(setup);
 
-  currentAdapter = adapters.nylas
+  currentAdapter = adapters.imap
 
   var stream = setup.nylas.deltas.startStream(setup.cursor, [],
     {exclude_folders: false});

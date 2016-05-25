@@ -4,6 +4,7 @@ var path = require('path');
 var configDir = path.join(process.env.HOME, ".credentials")
 
 var nylasCredentials = require(path.join(configDir, "nylas.json"))
+var imapCredentials = require(path.join(configDir, "imap.json"))
 var gmailCredentials = require(path.join(configDir, "gmail.json"))
 
 var GoogleAuthLibrary = require('google-auth-library')
@@ -13,5 +14,6 @@ googleOAuth2.credentials = gmailCredentials
 
 module.exports = {
   nylas: nylasCredentials,
+  imap: imapCredentials,
   gmail: {auth: googleOAuth2, userId: "me"},
 }
