@@ -53,6 +53,9 @@ module.exports = function(setup) {
           });
           setup.outlook.base.makeApiCall(params, function(err, resp){
             if(err) {return reject(err)}
+            if(resp.statusCode >= 400) {
+              return reject(new Error("Outlook API Error: "+resp.statusCode))
+            }
             var rawFolder = resp.body;
             rawFolder.id = rawFolder.Id;
             rawFolder.name = rawFolder.DisplayName;
@@ -82,6 +85,9 @@ module.exports = function(setup) {
           });
           setup.outlook.base.makeApiCall(params, function(err, resp){
             if(err) {return reject(err)}
+            if (!resp.body || !resp.body.value) {
+              return resolve([])
+            }
             return resolve(resp.body.value.map(function(rawFolder){
               rawFolder.id = rawFolder.Id
               rawFolder.name = rawFolder.DisplayName

@@ -1,12 +1,12 @@
 var fs = require('fs')
 
 var NUM_LABELS = 10;
-var STAGE_TIMEOUT = 1000 * 60 * 5 // 5 minutes
+var STAGE_TIMEOUT = 1000 * 60 * 1 // 1 minutes
 
 var labelNames = []
 
 var adapters = {}
-var ADAPTER_NAMES = ["gmail", "imap", "outlook"]
+var ADAPTER_NAMES = ["gmail", "nylas", "imap", "outlook"]
 var currentAdapterNameIndex = -1
 
 var STAGES = ["create", "delete"]
@@ -289,7 +289,7 @@ function cleanup(adapter) {
 
 var setupFn = require('./setup')
 setupFn().then(function(setup) {
-  currentAdapterNameIndex = 2;
+  currentAdapterNameIndex = 3;
   adapters = require('./adapters.js')(setup);
 
   var stream = setup.nylas.deltas.startStream(setup.cursor, [],
