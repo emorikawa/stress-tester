@@ -4,11 +4,15 @@ module.exports = function(setup) {
       key: "nylasAPI",
       name: "Nylas API",
       createLabel: function(name) {
-
+        var lbl = setup.nylas.labels.build({displayName: name});
+        return lbl.save()
       },
       deleteLabel: function(id) {
-
-      }
+        return setup.nylas.labels.delete(id);
+      },
+      list: function() {
+        return setup.nylas.labels.list({})
+      },
     },
     gmail: {
       key: "gmailAPI",

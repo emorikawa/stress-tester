@@ -16,7 +16,6 @@ for (var i = 0; i < NUM_LABELS; i++) {
 }
 
 function mean(values) {
-  console.log(values)
   if (!values || values.length === 0) {
     return 0;
   }
@@ -25,7 +24,6 @@ function mean(values) {
 }
 
 function stdev(values) {
-  console.log(values)
   if (!values || values.length === 0) {
     return 0;
   }
@@ -49,7 +47,6 @@ function outputResults() {
 
   avgData = {mean: {}, stdev: {}}
   for (var labelName in runData.labelData) {
-    runData.labelData[labelName]
     for (var i = 0; i < STAGES.length; i++) {
       var stage = STAGES[i]
       for (var stageStat in runData.labelData[labelName][stage]) {
@@ -128,7 +125,33 @@ function processDelta(delta) {
   try {
     if (delta.object === 'label') {
       var stage = delta.event;
-      var labelName = delta.attributes.display_name;
+      if (STAGES.indexOf(delta.event) === -1) {
+        console.error("XXX> Unsupported delta event", delta.event, delta);
+        return;
+      }
+
+      var labelName = null
+      var dataKey = currentAdapter.key + "Data"
+
+      if (delta.event === "delete") {
+        for (var labelKey in runData.labelData) {
+          var labelData = runData.labelData[labelKey][dataKey] || {}
+          if (labelData.id === delta.id) {
+            labelName = labelKey;
+            break;
+          }
+        }
+        if (!labelName) {
+          console.error("XXX> Couldn't find label with ID of ", delta.id)
+          return;
+        }
+      } else {
+        if (!delta.attributes || !delta.attributes.display_name) {
+          console.error("XXX> Unknown delta", delta);
+          return;
+        }
+        var labelName = delta.attributes.display_name;
+      }
 
       var data = runData.labelData[labelName][stage]
 
@@ -179,7 +202,7 @@ function runCreate(adapter) {
       data[endKey] = Date.now()
       data[timeKey] = data[endKey] - data[startKey]
       runData.labelData[labelName][dataKey] = err;
-      console.log("XXX> Error creating '"+labelName+"' in "+data[timeKey]+"ms on"+adapter.name, err);
+      console.log("XXX> Error creating '"+labelName+"' in "+data[timeKey]+"ms on "+adapter.name, err);
       checkStageAdvance()
     })
   });
@@ -216,7 +239,7 @@ function runDelete(adapter) {
     .catch(function(err){
       data[endKey] = Date.now()
       data[timeKey] = data[endKey] - data[startKey]
-      console.log("XXX> Error deleting '"+labelName+"' in "+data[timeKey]+"ms on"+adapter.name, err);
+      console.log("XXX> Error deleting '"+labelName+"' in "+data[timeKey]+"ms on "+adapter.name, err);
       checkStageAdvance()
     })
   });
@@ -241,7 +264,7 @@ var setupFn = require('./setup')
 setupFn().then(function(setup) {
   var adapters = require('./adapters.js')(setup);
 
-  currentAdapter = adapters.gmail
+  currentAdapter = adapters.nylas
 
   var stream = setup.nylas.deltas.startStream(setup.cursor, [],
     {exclude_folders: false});
