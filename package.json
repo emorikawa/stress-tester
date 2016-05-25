@@ -14,6 +14,7 @@
   "license": "GPL-3.0",
   "dependencies": {
     "googleapis": "x.x.x",
-    "google-auth-library": "x.x.x"
+    "google-auth-library": "x.x.x",
+    "nylas": "emorikawa/nylas-nodejs#stream-labels"
   }
 }

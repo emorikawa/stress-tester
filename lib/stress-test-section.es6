@@ -33,6 +33,7 @@ export default class StressTestSection extends React.Component {
   }
 
   _getLabels = () => {
+    this.setState({logs: ["Fetching labels from Gmail API…"]})
     this.state.gmail.users.labels.list(this.state.auth, (err, resp) => {
       if (err) { return console.error(err) }
       const names = resp.labels.map(l => l.name);

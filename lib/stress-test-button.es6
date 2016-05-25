@@ -14,7 +14,6 @@ export default class StressTestButton extends React.Component {
   }
 
   render() {
-    console.log("RENDERING")
     return (
       <div className="btn-container pull-left">
         <div className="btn" onClick={this._activateSection}>

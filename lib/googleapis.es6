@@ -9,11 +9,10 @@ var googleAuth = require('google-auth-library');
 var SCOPES = ['https://www.googleapis.com/auth/gmail.readonly'];
 var TOKEN_DIR = (process.env.HOME || process.env.HOMEPATH ||
     process.env.USERPROFILE) + '/.credentials/';
-var TOKEN_PATH = TOKEN_DIR + 'gmail-token.json';
-
+var TOKEN_PATH = TOKEN_DIR + 'gmail.json';
 
 // Load client secrets from a local file.
-export const authGmail = function(callback) {
+function authorize(callback) {
   fs.readFile(path.join(__dirname, "client_secret.json"), function processClientSecrets(err, content) {
     if (err) {
       console.log('Error loading client secret file: ' + err);
@@ -126,3 +125,5 @@ function listLabels(auth) {
     }
   });
 }
+
+module.exports = authorize

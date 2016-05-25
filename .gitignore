@@ -38,3 +38,5 @@ internal_packages/open-tracking
 internal_packages/send-later
 
 client_secret.json
+
+N1-Stress-Test*.json
