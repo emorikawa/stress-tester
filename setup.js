@@ -21,8 +21,27 @@ Object.keys(gmail.users.labels).forEach(function(key) {
   gmail.users.labels[key] = newFn
 })
 
-imap.NYLAS_TIMEOUT = 5000;
+var outlook = require('node-outlook')
+Object.keys(outlook.mail).forEach(function(key) {
+  var origFn = outlook.mail[key]
+  var newFn = function(arg) {
+    return new Promise(function(resolve, reject) {
+      var newArg = Object.assign({}, {token: credentials.outlook.token}, arg)
+      origFn(newArg, function(err, response) {
+        if (err) { return reject(err) }
+        return resolve(response)
+      })
+    })
+  }
+  outlook.mail[key] = newFn
+})
+outlook.FOLDER_PARAMS = {
+  token: credentials.outlook.token,
+  baseUrl: "https://outlook.office.com/api/v2.0/me/MailFolders",
+}
 
+
+imap.NYLAS_TIMEOUT = 5000;
 function imapConnect() {
   return new Promise(function(resolve, reject) {
     var timedOut = false;
@@ -69,10 +88,11 @@ function retryImapIfTimeout(tryPromise, attempt) {
         reject(err)
       }
     })
-
   })
 }
 imap.retryImapIfTimeout = retryImapIfTimeout
+
+
 
 function getCursor() {
   return new Promise(function(resolve, reject) {
@@ -90,6 +110,7 @@ function setup() {
     return Promise.resolve({
       imap: imap,
       gmail: gmail,
+      outlook: outlook,
       nylas: nylas,
       nylasgmail: nylasgmail,
       nylasimap: nylasimap,

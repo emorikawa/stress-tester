@@ -4,15 +4,27 @@ var NUM_LABELS = 10;
 var STAGE_TIMEOUT = 1000 * 60 * 5 // 5 minutes
 
 var labelNames = []
+
+var adapters = {}
+var ADAPTER_NAMES = ["gmail", "imap", "outlook"]
+var currentAdapterNameIndex = -1
+
 var STAGES = ["create", "delete"]
 var runData = {stageData: stageInit(), labelData: {}}
-var currentAdapter = null;
 var currentStageIndex = -1;
 
 var now = Date.now();
 for (var i = 0; i < NUM_LABELS; i++) {
   var globalLabelName = "N1-Stress-Test-" + now + "-" + i;
   labelNames.push(globalLabelName);
+}
+
+function currentAdapter() {
+  return adapters[ADAPTER_NAMES[currentAdapterNameIndex]]
+}
+
+function currentStage() {
+  return STAGES[currentStageIndex]
 }
 
 function mean(values) {
@@ -82,8 +94,7 @@ function outputResults() {
 function shouldAdvanceStage() {
   if (currentStageIndex < 0) { return true }
 
-  var currentStage = STAGES[currentStageIndex];
-  var stageStart = runData.stageData[currentStage].stageStart
+  var stageStart = runData.stageData[currentStage()].stageStart
 
   var beenTooLong = Date.now() - stageStart > STAGE_TIMEOUT
   if (beenTooLong) {
@@ -92,14 +103,14 @@ function shouldAdvanceStage() {
   }
 
   for (var labelName in runData.labelData) {
-    if (!runData.labelData[labelName][currentStage].deltaAt) { return false; }
+    if (!runData.labelData[labelName][currentStage()].deltaAt) { return false; }
   }
   return true;
 }
 
 function checkStageAdvance() {
   if (shouldAdvanceStage()) {
-    var oldStage = STAGES[currentStageIndex]
+    var oldStage = currentStage()
     if (oldStage) {
       runData.stageData[oldStage].stageEnd = Date.now()
       runData.stageData[oldStage].stageTime = runData.stageData[oldStage].stageEnd - runData.stageData[oldStage].stageStart
@@ -108,17 +119,30 @@ function checkStageAdvance() {
     currentStageIndex += 1;
 
     if (currentStageIndex >= STAGES.length) {
-      outputResults()
+      nextAdapter()
     } else {
-      var newStage = STAGES[currentStageIndex]
+      var newStage = currentStage()
       runData.stageData[newStage].stageStart = Date.now()
       if (newStage === "create") {
-        runCreate(currentAdapter)
+        runCreate(currentAdapter())
       } else if (newStage === "delete") {
-        runDelete(currentAdapter)
+        runDelete(currentAdapter())
       }
     }
   }
+}
+
+function nextAdapter() {
+  currentStageIndex = -1;
+  currentAdapterNameIndex += 1;
+  if (currentAdapterNameIndex >= ADAPTER_NAMES.length) {
+    outputResults();
+  } else {
+    setupAdapter(currentAdapter());
+  }
+}
+
+function setupAdapter(adapter) {
 }
 
 function processDelta(delta) {
@@ -131,7 +155,7 @@ function processDelta(delta) {
       }
 
       var labelName = null
-      var dataKey = currentAdapter.key + "Data"
+      var dataKey = currentAdapter().key + "Data"
 
       if (delta.event === "delete") {
         for (var labelKey in runData.labelData) {
@@ -151,6 +175,8 @@ function processDelta(delta) {
           return;
         }
         var labelName = delta.attributes.display_name;
+        var parts = labelName.split("\\");
+        labelName = parts[parts.length - 1]
         runData.labelData[labelName][dataKey].id = delta.attributes.id
       }
 
@@ -162,11 +188,11 @@ function processDelta(delta) {
 
       data.deltaAt = Date.now();
 
-      var deltaKey = currentAdapter.key + "ToDeltaTime";
-      var startKey = currentAdapter.key + "Start"
+      var deltaKey = currentAdapter().key + "ToDeltaTime";
+      var startKey = currentAdapter().key + "Start"
       data[deltaKey] = data.deltaAt - data[startKey]
 
-      console.log("---> DELTA: "+stage+" Label '"+labelName+"' "+data[deltaKey]+" ms since "+currentAdapter.name+" start")
+      console.log("---> DELTA: "+stage+" Label '"+labelName+"' "+data[deltaKey]+" ms since "+currentAdapter().name+" start")
 
       checkStageAdvance()
     }
@@ -263,9 +289,8 @@ function cleanup(adapter) {
 
 var setupFn = require('./setup')
 setupFn().then(function(setup) {
-  var adapters = require('./adapters.js')(setup);
-
-  currentAdapter = adapters.gmail
+  currentAdapterNameIndex = 2;
+  adapters = require('./adapters.js')(setup);
 
   var stream = setup.nylas.deltas.startStream(setup.cursor, [],
     {exclude_folders: false});
@@ -275,7 +300,7 @@ setupFn().then(function(setup) {
   });
 
   if (process.argv[2] === "cleanup") {
-    cleanup(currentAdapter)
+    cleanup(currentAdapter())
   } else {
     runData.runStart = Date.now()
     checkStageAdvance()

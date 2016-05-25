@@ -16,6 +16,7 @@
     "imap": "x.x.x",
     "googleapis": "x.x.x",
     "google-auth-library": "x.x.x",
+    "node-outlook": "x.x.x",
     "nylas": "emorikawa/nylas-nodejs#stream-labels"
   }
 }

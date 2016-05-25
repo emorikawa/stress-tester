@@ -38,6 +38,59 @@ module.exports = function(setup) {
         return setup.imap.retryImapIfTimeout(p)
       },
     },
+    outlook: {
+      key: "outlookAPI",
+      name: "Outlook API",
+      createLabel: function(name) {
+        return new Promise(function(resolve, reject){
+          var url = setup.outlook.FOLDER_PARAMS.baseUrl
+          var params = Object.assign({}, setup.outlook.FOLDER_PARAMS, {
+            method: "POST",
+            url: url + "/Inbox/childfolders",
+            payload: {
+              DisplayName: name,
+            },
+          });
+          setup.outlook.base.makeApiCall(params, function(err, resp){
+            if(err) {return reject(err)}
+            var rawFolder = resp.body;
+            rawFolder.id = rawFolder.Id;
+            rawFolder.name = rawFolder.DisplayName;
+            resolve(rawFolder)
+          })
+        })
+      },
+      deleteLabel: function(remoteData) {
+        return new Promise(function(resolve, reject){
+          var url = setup.outlook.FOLDER_PARAMS.baseUrl
+          var params = Object.assign({}, setup.outlook.FOLDER_PARAMS, {
+            method: "DELETE",
+            url: url + "/" + remoteData.id,
+          });
+          setup.outlook.base.makeApiCall(params, function(err, resp){
+            if(err) {return reject(err)}
+            else resolve()
+          })
+        })
+      },
+      list: function() {
+        return new Promise(function(resolve, reject){
+          var url = setup.outlook.FOLDER_PARAMS.baseUrl
+          var params = Object.assign({}, setup.outlook.FOLDER_PARAMS, {
+            method: "GET",
+            url: url + "/Inbox/childfolders",
+          });
+          setup.outlook.base.makeApiCall(params, function(err, resp){
+            if(err) {return reject(err)}
+            return resolve(resp.body.value.map(function(rawFolder){
+              rawFolder.id = rawFolder.Id
+              rawFolder.name = rawFolder.DisplayName
+              return rawFolder
+            }))
+          })
+        })
+      },
+    },
     nylas: {
       key: "nylasAPI",
       name: "Nylas API",
