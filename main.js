@@ -13,6 +13,8 @@ var STAGES = ["create", "delete"]
 var runData = {stageData: stageInit(), labelData: {}}
 var currentStageIndex = -1;
 
+var currentStream = null;
+
 var now = Date.now();
 for (var i = 0; i < NUM_LABELS; i++) {
   var globalLabelName = "N1-Stress-Test-" + now + "-" + i;
@@ -138,11 +140,34 @@ function nextAdapter() {
   if (currentAdapterNameIndex >= ADAPTER_NAMES.length) {
     outputResults();
   } else {
-    setupAdapter(currentAdapter());
+    setupNylasAPI(ADAPTER_NAMES[currentAdapterNameIndex]);
   }
 }
 
-function setupAdapter(adapter) {
+function setupNylasAPI(adapterName) {
+  return new Promise(function(resolve, reject) {
+    var nylasToken = require('./credentials.js').nylas[adapterName]
+    var nylasAPI = require('nylas').with(nylasToken)
+
+    nylasAPI.deltas.latestCursor(function onLatestCursor(err, cursor) {
+      if (err) {
+        return reject(err)
+      }
+
+      if (currentStream && currentStream.close) {
+        currentStream.close()
+      }
+
+      currentStream = nylasAPI.deltas.startStream(setup.cursor, [],
+        {exclude_folders: false});
+      console.log("---> Listening to Nylas Delta with cursor: "+setup.cursor);
+      currentStream.on('delta', processDelta).on('error', function(err) {
+        console.error('Delta streaming error:', err);
+      });
+
+      resolve()
+    })
+  })
 }
 
 function processDelta(delta) {
@@ -289,16 +314,7 @@ function cleanup(adapter) {
 
 var setupFn = require('./setup')
 setupFn().then(function(setup) {
-  currentAdapterNameIndex = 3;
   adapters = require('./adapters.js')(setup);
-
-  var stream = setup.nylas.deltas.startStream(setup.cursor, [],
-    {exclude_folders: false});
-  console.log("---> Listening to Nylas Delta with cursor: "+setup.cursor);
-  stream.on('delta', processDelta).on('error', function(err) {
-    console.error('Delta streaming error:', err);
-  });
-
   if (process.argv[2] === "cleanup") {
     cleanup(currentAdapter())
   } else {
