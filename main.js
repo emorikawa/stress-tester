@@ -28,23 +28,23 @@ function currentAdapter() {
 function currentStage() {
   return STAGES[currentStageIndex]
 }
-
-function mean(values) {
-  if (!values || values.length === 0) {
-    return 0;
-  }
-  var sum = values.reduce((function(sum, value) {return sum + value}), 0)
-  return sum / values.length
-}
-
-function stdev(values) {
-  if (!values || values.length === 0) {
-    return 0;
-  }
-  var avg = mean(values)
-  var squareDiffs = values.map(function(val) { return Math.pow((val - avg), 2)})
-  return Math.sqrt(mean(squareDiffs))
-}
+//
+// function mean(values) {
+//   if (!values || values.length === 0) {
+//     return 0;
+//   }
+//   var sum = values.reduce((function(sum, value) {return sum + value}), 0)
+//   return sum / values.length
+// }
+//
+// function stdev(values) {
+//   if (!values || values.length === 0) {
+//     return 0;
+//   }
+//   var avg = mean(values)
+//   var squareDiffs = values.map(function(val) { return Math.pow((val - avg), 2)})
+//   return Math.sqrt(mean(squareDiffs))
+// }
 
 function stageInit() {
   var init = {}
@@ -55,42 +55,42 @@ function stageInit() {
 }
 
 function outputResults() {
-  console.log("---> DONE!");
-  runData.runStop = Date.now()
-  runData.runTime = runData.runStop - runData.runStart
+  // console.log("---> DONE!");
+  // runData.runStop = Date.now()
+  // runData.runTime = runData.runStop - runData.runStart
 
-  avgData = {mean: {}, stdev: {}}
-  for (var labelName in runData.labelData) {
-    for (var i = 0; i < STAGES.length; i++) {
-      var stage = STAGES[i]
-      for (var stageStat in runData.labelData[labelName][stage]) {
-        if (/Time/.test(stageStat)) {
-          var key = stage+" "+stageStat
-          if (!avgData.mean[key]) {avgData.mean[key] = []}
-          if (!avgData.stdev[key]) {avgData.stdev[key] = []}
-          avgData.mean[key].push(runData.labelData[labelName][stage][stageStat])
-          avgData.stdev[key].push(runData.labelData[labelName][stage][stageStat])
-        }
-      }
-    }
-  }
-  for (var meanStat in avgData.mean) {
-    avgData.mean[meanStat] = Math.round(mean(avgData.mean[meanStat]))
-  }
-  for (var meanStat in avgData.stdev) {
-    avgData.stdev[meanStat] = Math.round(stdev(avgData.stdev[meanStat]))
-  }
+  // avgData = {mean: {}, stdev: {}}
+  // for (var labelName in runData.labelData) {
+  //   for (var i = 0; i < STAGES.length; i++) {
+  //     var stage = STAGES[i]
+  //     for (var stageStat in runData.labelData[labelName][stage]) {
+  //       if (/Time/.test(stageStat)) {
+  //         var key = stage+" "+stageStat
+  //         if (!avgData.mean[key]) {avgData.mean[key] = []}
+  //         if (!avgData.stdev[key]) {avgData.stdev[key] = []}
+  //         avgData.mean[key].push(runData.labelData[labelName][stage][stageStat])
+  //         avgData.stdev[key].push(runData.labelData[labelName][stage][stageStat])
+  //       }
+  //     }
+  //   }
+  // }
+  // for (var meanStat in avgData.mean) {
+  //   avgData.mean[meanStat] = Math.round(mean(avgData.mean[meanStat]))
+  // }
+  // for (var meanStat in avgData.stdev) {
+  //   avgData.stdev[meanStat] = Math.round(stdev(avgData.stdev[meanStat]))
+  // }
+  //
+  // runData.avgData = avgData
 
-  runData.avgData = avgData
-
-  console.log(runData.labelData)
-  console.log(runData.stageData)
-  console.log(runData.avgData)
-  console.log(runData.runTime)
-  var fname = "N1-stress-test-"+Date.now()+".json"
-  fs.writeFileSync(fname, JSON.stringify(runData), {encoding: "utf8"})
-  console.log("---> Wrote log to "+fname)
-  process.exit(0);
+  // console.log(runData.labelData)
+  // console.log(runData.stageData)
+  // console.log(runData.avgData)
+  // console.log(runData.runTime)
+  // var fname = "N1-stress-test-"+Date.now()+".json"
+  // fs.writeFileSync(fname, JSON.stringify(runData), {encoding: "utf8"})
+  // console.log("---> Wrote log to "+fname)
+  // process.exit(0);
 }
 
 function shouldAdvanceStage() {
@@ -134,96 +134,96 @@ function checkStageAdvance() {
   }
 }
 
-function nextAdapter() {
-  currentStageIndex = -1;
-  currentAdapterNameIndex += 1;
-  if (currentAdapterNameIndex >= ADAPTER_NAMES.length) {
-    outputResults();
-  } else {
-    setupNylasAPI(ADAPTER_NAMES[currentAdapterNameIndex]);
-  }
-}
+// function nextAdapter() {
+//   currentStageIndex = -1;
+//   currentAdapterNameIndex += 1;
+//   if (currentAdapterNameIndex >= ADAPTER_NAMES.length) {
+//     outputResults();
+//   } else {
+//     setupNylasAPI(ADAPTER_NAMES[currentAdapterNameIndex]);
+//   }
+// }
 
 function setupNylasAPI(adapterName) {
-  return new Promise(function(resolve, reject) {
-    var nylasToken = require('./credentials.js').nylas[adapterName]
-    var nylasAPI = require('nylas').with(nylasToken)
-
-    nylasAPI.deltas.latestCursor(function onLatestCursor(err, cursor) {
-      if (err) {
-        return reject(err)
-      }
-
-      if (currentStream && currentStream.close) {
-        currentStream.close()
-      }
-
-      currentStream = nylasAPI.deltas.startStream(setup.cursor, [],
-        {exclude_folders: false});
-      console.log("---> Listening to Nylas Delta with cursor: "+setup.cursor);
-      currentStream.on('delta', processDelta).on('error', function(err) {
-        console.error('Delta streaming error:', err);
-      });
-
-      resolve()
-    })
-  })
+  // return new Promise(function(resolve, reject) {
+  //   var nylasToken = require('./credentials.js').nylas[adapterName]
+  //   var nylasAPI = require('nylas').with(nylasToken)
+  //
+  //   nylasAPI.deltas.latestCursor(function onLatestCursor(err, cursor) {
+  //     if (err) {
+  //       return reject(err)
+  //     }
+  //
+  //     if (currentStream && currentStream.close) {
+  //       currentStream.close()
+  //     }
+  //
+  //     currentStream = nylasAPI.deltas.startStream(setup.cursor, [],
+  //       {exclude_folders: false});
+  //     console.log("---> Listening to Nylas Delta with cursor: "+setup.cursor);
+  //     currentStream.on('delta', processDelta).on('error', function(err) {
+  //       console.error('Delta streaming error:', err);
+  //     });
+  //
+  //     resolve()
+  //   })
+  // })
 }
 
 function processDelta(delta) {
-  try {
-    if (delta.object === "label" || delta.object === "folder") {
-      var stage = delta.event;
-      if (STAGES.indexOf(delta.event) === -1) {
-        console.error("XXX> Unsupported delta event", delta.event, delta);
-        return;
-      }
-
-      var labelName = null
-      var dataKey = currentAdapter().key + "Data"
-
-      if (delta.event === "delete") {
-        for (var labelKey in runData.labelData) {
-          var labelData = runData.labelData[labelKey][dataKey] || {}
-          if (labelData.id === delta.id) {
-            labelName = labelKey;
-            break;
-          }
-        }
-        if (!labelName) {
-          console.error("XXX> Couldn't find label with ID of ", delta.id)
-          return;
-        }
-      } else {
-        if (!delta.attributes || !delta.attributes.display_name) {
-          console.error("XXX> Unknown delta", delta);
-          return;
-        }
-        var labelName = delta.attributes.display_name;
-        var parts = labelName.split("\\");
-        labelName = parts[parts.length - 1]
-        runData.labelData[labelName][dataKey].id = delta.attributes.id
-      }
-
-      var data = runData.labelData[labelName][stage]
-
-      if (!data) {
-        console.error("XXX> Got a delta for an unknown label", labelName);
-      }
-
-      data.deltaAt = Date.now();
-
-      var deltaKey = currentAdapter().key + "ToDeltaTime";
-      var startKey = currentAdapter().key + "Start"
-      data[deltaKey] = data.deltaAt - data[startKey]
-
-      console.log("---> DELTA: "+stage+" Label '"+labelName+"' "+data[deltaKey]+" ms since "+currentAdapter().name+" start")
-
-      checkStageAdvance()
-    }
-  } catch (err) {
-    console.error('Delta streaming parse error:', err);
-  }
+  // try {
+  //   if (delta.object === "label" || delta.object === "folder") {
+  //     var stage = delta.event;
+  //     if (STAGES.indexOf(delta.event) === -1) {
+  //       console.error("XXX> Unsupported delta event", delta.event, delta);
+  //       return;
+  //     }
+  //
+  //     var labelName = null
+  //     var dataKey = currentAdapter().key + "Data"
+  //
+  //     if (delta.event === "delete") {
+  //       for (var labelKey in runData.labelData) {
+  //         var labelData = runData.labelData[labelKey][dataKey] || {}
+  //         if (labelData.id === delta.id) {
+  //           labelName = labelKey;
+  //           break;
+  //         }
+  //       }
+  //       if (!labelName) {
+  //         console.error("XXX> Couldn't find label with ID of ", delta.id)
+  //         return;
+  //       }
+  //     } else {
+  //       if (!delta.attributes || !delta.attributes.display_name) {
+  //         console.error("XXX> Unknown delta", delta);
+  //         return;
+  //       }
+  //       var labelName = delta.attributes.display_name;
+  //       var parts = labelName.split("\\");
+  //       labelName = parts[parts.length - 1]
+  //       runData.labelData[labelName][dataKey].id = delta.attributes.id
+  //     }
+  //
+  //     var data = runData.labelData[labelName][stage]
+  //
+  //     if (!data) {
+  //       console.error("XXX> Got a delta for an unknown label", labelName);
+  //     }
+  //
+  //     data.deltaAt = Date.now();
+  //
+  //     var deltaKey = currentAdapter().key + "ToDeltaTime";
+  //     var startKey = currentAdapter().key + "Start"
+  //     data[deltaKey] = data.deltaAt - data[startKey]
+  //
+  //     console.log("---> DELTA: "+stage+" Label '"+labelName+"' "+data[deltaKey]+" ms since "+currentAdapter().name+" start")
+  //
+  //     checkStageAdvance()
+  //   }
+  // } catch (err) {
+  //   console.error('Delta streaming parse error:', err);
+  // }
 }
 
 function runCreate(adapter) {
@@ -312,20 +312,24 @@ function cleanup(adapter) {
   }).catch(console.error)
 }
 
-var setupFn = require('./setup')
-setupFn().then(function(setup) {
-  adapters = require('./adapters.js')(setup);
-  if (process.argv[2] === "cleanup") {
-    cleanup(currentAdapter())
-  } else {
-    runData.runStart = Date.now()
-    checkStageAdvance()
-    setInterval(checkStageAdvance, 500)
-  }
+TestRunner = require('./test-runner')
+var testRunner = new TestRunner(require('./config.json'))
+testRunner.run()
 
-}).catch(function(err) {
-  console.error(err);
-})
+// var setupFn = require('./setup')
+// setupFn().then(function(setup) {
+//   adapters = require('./adapters.js')(setup);
+//   if (process.argv[2] === "cleanup") {
+//     cleanup(currentAdapter())
+//   } else {
+//     runData.runStart = Date.now()
+//     checkStageAdvance()
+//     setInterval(checkStageAdvance, 500)
+//   }
+//
+// }).catch(function(err) {
+//   console.error(err);
+// })
 
 process.on('SIGINT', function() {
   if (process.argv[2] !== "cleanup") {
