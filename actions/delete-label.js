@@ -31,7 +31,7 @@ deleteLabel.isMatchingDelta = function(delta) {
   return delta.event === "create" && (delta.object === "label" || delta.object === "folder")
 }
 
-deleteLabe.trialNameFromDelta = function(delta, trialData) {
+deleteLabel.trialNameFromDelta = function(delta, trialData) {
   for (var labelName in trialData) {
     if (trialData[trialName].rawServerData.id === delta.id) {
       return labelName;

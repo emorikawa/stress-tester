@@ -1,4 +1,5 @@
 var TestRunner = require('./test-runner')
+var TestResults = require('./test-results.js')
 
 var trialNames = []
 var now = Date.now();
@@ -13,7 +14,7 @@ var deleteLabel = require('./actions/delete-label.js')
 var config = {
   actions: [createLabel, deleteLabel],
   trialNames: trialNames,
-  adapterKeys: ["gmail", "nylas", "imap", "outlook"],
+  adapterKeys: ["gmail"],
   actionTimeout: 1000 * 60 * 1 // 1 minute,
 }
 
