@@ -9,7 +9,7 @@ var deleteLabel = function(adapter, onTrialData, adapterDataClone, config) {
     data.trialStart = Date.now();
     console.log("Deleting", labelName)
 
-    var labelId = adpaterDataClone.trialData.deleteLabel[labelName].rawServerData.id
+    var labelId = adapterDataClone.trialData.deleteLabel[labelName].rawServerData.id
     return adapter.deleteLabel(labelId)
     .then(function(){
       data.trialStop = Date.now();
@@ -25,7 +25,7 @@ var deleteLabel = function(adapter, onTrialData, adapterDataClone, config) {
     })
   }));
 }
-deleteLabel.name = "deleteLabel"
+deleteLabel.key = "deleteLabel"
 
 deleteLabel.isMatchingDelta = function(delta) {
   return delta.event === "create" && (delta.object === "label" || delta.object === "folder")

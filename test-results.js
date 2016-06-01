@@ -21,7 +21,7 @@ function stdev(values) {
  *
  * testResults:
  *   gmail: (adapter.key)
- *     createLabel: (action.name)
+ *     createLabel: (action.key)
  *       trialData:
  *         "N1-Stress-Test-00000-1": (trialName)
  *           rawServerData:
@@ -40,18 +40,18 @@ function stdev(values) {
  *       actionStart: timestamp
  *       actionStop: timestamp
  *       actionTime: number
- *     updateLabel: (action.name)
+ *     updateLabel: (action.key)
  *       ...
- *     deleteLabel: (action.name)
+ *     deleteLabel: (action.key)
  *       ...
- *     ... (action.name)
+ *     ... (action.key)
  *     avgData:
- *       createLabel: (action.name)
+ *       createLabel: (action.key)
  *         mean: number
  *         stdev: number
- *       updateLabel: (action.name)
+ *       updateLabel: (action.key)
  *         ...
- *       deleteLabel: (action.name)
+ *       deleteLabel: (action.key)
  *         ...
  *       ...
  *     adapterStart: timestamp
@@ -85,22 +85,46 @@ var TestResults = (function() {
       return;
     }
 
-    var trialData = this.testResults[this.currentAdapter.key][this.currentAction.name].trialData
+    var trialData = this.testResults[this.currentAdapter.key][this.currentAction.key].trialData
 
     try {
       var trialName = this.currentAction.trialNameFromDelta(delta, trialData);
-      var now = Date.now()
+      console.log(this.testResults[this.currentAdapter.key])
+      console.log(trialName);
+      var now = Date.now();
       trialData[trialName].deltaAt = now
       trialData[trialName].deltaTime = now - trialData[trialName].trialStart
-      console.log("---> DELTA: "+this.currentAction.name+" '"+trialName+"' "+trialData[trialName].deltaTime+" ms since "+this.currentAdapter.key+" start")
+      console.log("---> DELTA: "+this.currentAction.key+" '"+trialName+"' "+trialData[trialName].deltaTime+" ms since "+this.currentAdapter.key+" start")
     } catch (err) {
       console.error('Delta streaming parse error:');
       console.error(err);
     }
   }
 
+  TestResults.prototype.waitForDeltas = function(adapter, action, actionTimeout) {
+    self = this;
+    return new Promise(function(resolve, reject) {
+      var tint = setInterval(function(){
+        var data = self.testResults[adapter.key][action.key].trialData;
+        for (var trialName in data) {
+          if (!data[trialName].deltaTime) { return }
+        }
+        clearTimeout(tout)
+        clearInterval(tint)
+        return resolve()
+      }, 10)
+
+      var tout = setTimeout(function() {
+        clearInterval(tint)
+        var err = new Error("XXX> Action "+action.key+" timed out waiting for deltas")
+        reject(err)
+      }, actionTimeout)
+    })
+
+  }
+
   TestResults.prototype.onTrialData = function(adapter, action, newTrialData) {
-    var data = this.testResults[adapter.key].trialData[action.name]
+    var data = this.testResults[adapter.key][action.key]
     data.trialData = Object.assign({}, data.trialData, newTrialData)
   }
 
@@ -108,15 +132,15 @@ var TestResults = (function() {
     var adapterData = this.testResults[adapter.key]
 
     previousAction = this.currentAction;
-    if (previousAction && previousAction.name) {
-      var actionData = adapterData[previousAction.name]
+    if (previousAction && previousAction.key) {
+      var actionData = adapterData[previousAction.key]
       actionData.actionStop = Date.now()
       actionData.actionTime = actionData.actionStop - actionData.actionStart
     }
 
     this.currentAction = action;
-    adapterData[action.name] = {trialData: {}}
-    adapterData[action.name].actionStart = Date.now()
+    adapterData[action.key] = {trialData: {}}
+    adapterData[action.key].actionStart = Date.now()
   }
 
   TestResults.prototype.onAdapterChange = function(newAdapter) {
@@ -125,7 +149,8 @@ var TestResults = (function() {
     }
     this.currentAdapter = newAdapter;
     this.testResults[this.currentAdapter.key] = {}
-    this.testResults[this.currentAdapter.key].adapterStart = Date.now()
+    this.testResults[this.currentAdapter.key].adapterStart = Date.now();
+    console.log("onAdapterChange")
   }
 
   TestResults.prototype.finalizeAdapter = function(adapterKey) {

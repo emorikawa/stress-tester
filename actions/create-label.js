@@ -26,7 +26,7 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
     })
   }));
 }
-createLabel.name = "createLabel"
+createLabel.key = "createLabel"
 
 createLabel.isMatchingDelta = function(delta) {
   return delta.event === "create" && (delta.object === "label" || delta.object === "folder")

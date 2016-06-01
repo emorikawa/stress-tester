@@ -8,7 +8,8 @@ var TestRunner = (function() {
   }
 
   TestRunner.prototype.runNextAdapter = function() {
-    this.actionIndex = -1;
+    this.actionIndex = -1
+    console.log("Running next adapter")
     return this.loadNextAdapter()
     .then(this.setupDeltaStream.bind(this))
     .then(this.runNextAction.bind(this));
@@ -16,8 +17,9 @@ var TestRunner = (function() {
 
   TestRunner.prototype.setupDeltaStream = function(adapter) {
     if (!adapter) { return Promise.resolve() }
-    var self = this
+    var self = this;
 
+    console.log("Setting up delta stream")
     nylasAdapter = require("./adapters/nylas.js")
     return nylasAdapter.setup(adapter.key).then(function(token) {
       return Promise.resolve(require('nylas').with(token))
@@ -25,6 +27,7 @@ var TestRunner = (function() {
       return new Promise(function(resolve, reject){
         if (lastStream && lastStream.close) { lastStream.close() }
 
+        console.log("Getting latest cursor")
         nylasAPI.deltas.latestCursor(function(err, cursor) {
           if (err) { return reject(err) }
 
@@ -57,6 +60,7 @@ var TestRunner = (function() {
     this.adapterIndex += 1;
     var self = this;
     var adapterKey = this.config.adapterKeys[this.adapterIndex]
+    console.log("Loading adapter", adapterKey)
     if (!adapterKey) {
       return Promise.resolve()
     } else {
@@ -73,30 +77,11 @@ var TestRunner = (function() {
     }
   }
 
-  TestRunner.prototype.waitForDeltas = function(adapter, action) {
-    self = this;
-    return new Promise(function(resolve, reject) {
-      var tint = setInterval(function(){
-        var data = self.testResults[adapter.key][action.name].trialData;
-        for (var trialName in data) {
-          if (!data[trialName].deltaTime) { return }
-        }
-        clearTimeout(tout)
-        clearInterval(tint)
-        return resolve()
-      }, 10)
-
-      var tout = setTimeout(function() {
-        clearInterval(tint)
-        var err = new Error("XXX> Action "+action.name+" timed out waiting for deltas")
-        reject(err)
-      }, self.config.actionTimeout)
-    })
-  }
-
   TestRunner.prototype.runNextAction = function(adapter) {
     this.actionIndex += 1;
     var action = this.config.actions[this.actionIndex]
+    console.log("Running next action", this.actionIndex)
+    console.log(action.key)
     if (action) {
       this.testResults.onActionChange(adapter, action);
 
@@ -108,11 +93,11 @@ var TestRunner = (function() {
       }
       return action(adapter, onTrialData, adapterDataClone, this.config)
       .then(function() {
-        return self.waitForDeltas(adapter, action)
+        return self.testResults.waitForDeltas(adapter, action, self.config.actionTimeout)
       }).then(function(){
         return self.runNextAction(adapter)
       }).catch(function(err){
-        console.error("XXX> Action "+action.name+" had an error");
+        console.error("XXX> Action "+action.key+" had an error");
         console.error(err)
         return self.runNextAction(adapter)
       })
