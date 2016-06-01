@@ -77,7 +77,13 @@ var TestRunner = (function() {
     self = this;
     return new Promise(function(resolve, reject) {
       var tint = setInterval(function(){
-
+        var data = self.testResults[adapter.key][action.name].trialData;
+        for (var trialName in data) {
+          if (!data[trialName].deltaTime) { return }
+        }
+        clearTimeout(tout)
+        clearInterval(tint)
+        return resolve()
       }, 10)
 
       var tout = setTimeout(function() {

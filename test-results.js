@@ -29,7 +29,9 @@ function stdev(values) {
  *             ...
  *           trialStart: timestamp
  *           trialStop: timestamp
- *           trialTime: timestamp
+ *           trialTime: number
+ *           deltaAt: timestamp
+ *           deltaTime: number
  *         "N1-Stress-Test-00000-2": (trialName)
  *           ...
  *         "N1-Stress-Test-00000-3": (trialName)
@@ -37,7 +39,7 @@ function stdev(values) {
  *         ... (trialName)
  *       actionStart: timestamp
  *       actionStop: timestamp
- *       actionTime: timestamp
+ *       actionTime: number
  *     updateLabel: (action.name)
  *       ...
  *     deleteLabel: (action.name)
@@ -54,7 +56,7 @@ function stdev(values) {
  *       ...
  *     adapterStart: timestamp
  *     adapterStop: timestamp
- *     adapterTime: timestamp
+ *     adapterTime: number
  *   imap: (adapter.key)
  *     ...
  *   outlook: (adapter.key)
@@ -64,7 +66,7 @@ function stdev(values) {
  *   ... (adapter.key)
  *   testStart: timestamp
  *   testStop: timestamp
- *   testTime: timestamp
+ *   testTime: number
  */
 var TestResults = (function() {
   function TestResults() {
@@ -86,60 +88,14 @@ var TestResults = (function() {
     var trialData = this.testResults[this.currentAdapter.key][this.currentAction.name].trialData
 
     try {
-      var trialName = this.currentAction.trialNameFromDelta(delta, adpaterData)
-      trialData[keyName]
+      var trialName = this.currentAction.trialNameFromDelta(delta, trialData);
+      var now = Date.now()
+      trialData[trialName].deltaAt = now
+      trialData[trialName].deltaTime = now - trialData[trialName].trialStart
+      console.log("---> DELTA: "+this.currentAction.name+" '"+trialName+"' "+trialData[trialName].deltaTime+" ms since "+this.currentAdapter.key+" start")
     } catch (err) {
       console.error('Delta streaming parse error:');
       console.error(err);
-    }
-
-
-    try {
-      if (delta.object === "label" || delta.object === "folder") {
-        var stageName = delta.event;
-
-        var trialName = null
-
-        if (delta.event === "delete") {
-          for (var trialName in adapterData.trialData) {
-            var trialData = adapterData.trialData[trialName].rawServerData || {}
-            if (trialData.id === delta.id) {
-              trialName = trialName;
-              break;
-            }
-          }
-          if (!trialName) {
-            console.error("XXX> Couldn't find label with ID of ", delta.id)
-            return;
-          }
-        } else if (delta.event === "create") {
-          if (!delta.attributes || !delta.attributes.display_name) {
-            console.error("XXX> Unknown delta", delta);
-            return;
-          }
-          var trialName = delta.attributes.display_name;
-          var parts = trialName.split("\\");
-          trialName = parts[parts.length - 1]
-          adapterData.trialData[trialName].rawServerData.id = delta.attributes.id
-        } else {
-          return
-        }
-
-        var stageData = adapterData.trialData[trialName][stageName]
-
-        if (!stageData) {
-          console.error("XXX> Got a delta for an unknown label", trialName);
-        }
-
-        stageData.deltaAt = Date.now();
-
-        var deltaKey = this.currentAdapter.key + "ToDeltaTime";
-        stageData[deltaKey] = stageData.deltaAt - stageData.trialStart
-
-        console.log("---> DELTA: "+stage+" Label '"+trialName+"' "+stageData[deltaKey]+" ms since "+currentAdapter.name+" start")
-      }
-    } catch (err) {
-      console.error('Delta streaming parse error:', err);
     }
   }
 
@@ -186,7 +142,8 @@ var TestResults = (function() {
       if (!avgData.stdev[actionName]) {avgData.stdev[actionName] = []}
 
       for (var trialName in adapterData[actionName].trialData) {
-        var time = adapterData[actionName].trialData[trialName].trialTime
+        var time = adapterData[actionName].trialData[trialName].deltaTime;
+        if (!time) { continue }
         avgData.mean[actionName].push(time)
         avgData.stdev[actionName].push(time)
       }
