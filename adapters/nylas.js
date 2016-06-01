@@ -8,32 +8,10 @@ var currentStream = null;
 
 module.exports = {
   nylas: {
-    key: "nylasAPI",
+    key: "nylas",
     name: "Nylas API",
-    setup: function(adapterName) {
-      // return new Promise(function(resolve, reject) {
-      //   var nylasToken = nylasCredentials[adapterName]
-      //   nylasAPI = require('nylas').with(nylasToken)
-      //
-      //   nylasAPI.deltas.latestCursor(function onLatestCursor(err, cursor) {
-      //     if (err) {
-      //       return reject(err)
-      //     }
-      //
-      //     if (currentStream && currentStream.close) {
-      //       currentStream.close()
-      //     }
-      //
-      //     currentStream = nylasAPI.deltas.startStream(cursor, [],
-      //       {exclude_folders: false});
-      //     console.log("---> Listening to Nylas Delta with cursor: "+cursor);
-      //     currentStream.on('delta', processDelta).on('error', function(err) {
-      //       console.error('Delta streaming error:', err);
-      //     });
-      //
-      //     resolve()
-      //   })
-      // })
+    setup: function(adapterKey) {
+      return Promise.resolve(nylasCredentials[adapterKey])
     },
     createLabel: function(name) {
       var lbl = nylasAPI.labels.build({displayName: name});

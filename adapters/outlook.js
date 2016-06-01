@@ -24,7 +24,7 @@ Object.keys(outlook.mail).forEach(function(key) {
 })
 
 module.exports = {
-  key: "outlookAPI",
+  key: "outlook",
   name: "Outlook API",
   setup: function() { return Promise.resolve() },
   createLabel: function(name) {

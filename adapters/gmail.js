@@ -27,7 +27,7 @@ Object.keys(gmail.users.labels).forEach(function(key) {
 })
 
 module.exports = {
-  key: "gmailAPI",
+  key: "gmail",
   name: "Gmail API",
   setup: function() { return Promise.resolve() },
   createLabel: function(name) {

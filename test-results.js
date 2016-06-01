@@ -1,3 +1,4 @@
+var fs = require('fs')
 function mean(values) {
   if (!values || values.length === 0) {
     return 0;
@@ -15,40 +16,99 @@ function stdev(values) {
   return Math.sqrt(mean(squareDiffs))
 }
 
+/**
+ * Test Results.
+ *
+ * testResults:
+ *   gmail: (adapter.key)
+ *     createLabel: (action.name)
+ *       trialData:
+ *         "N1-Stress-Test-00000-1": (trialName)
+ *           rawServerData:
+ *             id: number,
+ *             ...
+ *           trialStart: timestamp
+ *           trialStop: timestamp
+ *           trialTime: timestamp
+ *         "N1-Stress-Test-00000-2": (trialName)
+ *           ...
+ *         "N1-Stress-Test-00000-3": (trialName)
+ *           ...
+ *         ... (trialName)
+ *       actionStart: timestamp
+ *       actionStop: timestamp
+ *       actionTime: timestamp
+ *     updateLabel: (action.name)
+ *       ...
+ *     deleteLabel: (action.name)
+ *       ...
+ *     ... (action.name)
+ *     avgData:
+ *       createLabel: (action.name)
+ *         mean: number
+ *         stdev: number
+ *       updateLabel: (action.name)
+ *         ...
+ *       deleteLabel: (action.name)
+ *         ...
+ *       ...
+ *     adapterStart: timestamp
+ *     adapterStop: timestamp
+ *     adapterTime: timestamp
+ *   imap: (adapter.key)
+ *     ...
+ *   outlook: (adapter.key)
+ *     ...
+ *   nylas: (adapter.key)
+ *     ...
+ *   ... (adapter.key)
+ *   testStart: timestamp
+ *   testStop: timestamp
+ *   testTime: timestamp
+ */
 var TestResults = (function() {
   function TestResults() {
-    this.init()
-  }
-
-  TestResults.prototype.init = function(delta) {
     this.testResults = {}
     this.currentAdapter = null
-    this.currentStageName = null
+    this.currentAction = null
     this.testResults.testStart = Date.now()
   }
 
   TestResults.prototype.onDelta = function(delta) {
-    var adapterData = this.testResults[this.currentAdapter.key]
+    if (!delta || !delta.attributes) {
+      console.error("XXX> Malformed delta", delta)
+      return;
+    }
+    if (!this.currentAction.isMatchingDelta(delta)) {
+      return;
+    }
+
+    var trialData = this.testResults[this.currentAdapter.key][this.currentAction.name].trialData
+
+    try {
+      var trialName = this.currentAction.trialNameFromDelta(delta, adpaterData)
+      trialData[keyName]
+    } catch (err) {
+      console.error('Delta streaming parse error:');
+      console.error(err);
+    }
+
+
     try {
       if (delta.object === "label" || delta.object === "folder") {
         var stageName = delta.event;
-        // if (STAGES.indexOf(delta.event) === -1) {
-        //   console.error("XXX> Unsupported delta event", delta.event, delta);
-        //   return;
-        // }
 
-        var labelName = null
-        var dataKey = this.currentAdapter.key + "Data"
+        var trialName = null
 
         if (delta.event === "delete") {
-          for (var labelName in adapterData.labelData) {
-            var labelData = adapterData.labelData[labelName][dataKey] || {}
-            if (labelData.id === delta.id) {
-              labelName = labelName;
+          for (var trialName in adapterData.trialData) {
+            var trialData = adapterData.trialData[trialName].rawServerData || {}
+            if (trialData.id === delta.id) {
+              trialName = trialName;
               break;
             }
           }
-          if (!labelName) {
+          if (!trialName) {
             console.error("XXX> Couldn't find label with ID of ", delta.id)
             return;
           }
@@ -57,73 +117,96 @@ var TestResults = (function() {
             console.error("XXX> Unknown delta", delta);
             return;
           }
-          var labelName = delta.attributes.display_name;
-          var parts = labelName.split("\\");
-          labelName = parts[parts.length - 1]
-          adapterData.labelData[labelName][dataKey].id = delta.attributes.id
+          var trialName = delta.attributes.display_name;
+          var parts = trialName.split("\\");
+          trialName = parts[parts.length - 1]
+          adapterData.trialData[trialName].rawServerData.id = delta.attributes.id
         } else {
           return
         }
 
-        var stageData = adapterData.labelData[labelName][stageName]
+        var stageData = adapterData.trialData[trialName][stageName]
 
         if (!stageData) {
-          console.error("XXX> Got a delta for an unknown label", labelName);
+          console.error("XXX> Got a delta for an unknown label", trialName);
         }
 
         stageData.deltaAt = Date.now();
 
-        var deltaKey = currentAdapter.key + "ToDeltaTime";
-        var startKey = currentAdapter.key + "Start"
-        stageData[deltaKey] = stageData.deltaAt - stageData[startKey]
+        var deltaKey = this.currentAdapter.key + "ToDeltaTime";
+        stageData[deltaKey] = stageData.deltaAt - stageData.trialStart
 
-        console.log("---> DELTA: "+stage+" Label '"+labelName+"' "+stageData[deltaKey]+" ms since "+currentAdapter.name+" start")
+        console.log("---> DELTA: "+stage+" Label '"+trialName+"' "+stageData[deltaKey]+" ms since "+currentAdapter.name+" start")
       }
     } catch (err) {
       console.error('Delta streaming parse error:', err);
     }
   }
 
-  TestResults.prototype.onStageChange = function(newStage) {
-    this.currentStageName = newStage
+  TestResults.prototype.onTrialData = function(adapter, action, newTrialData) {
+    var data = this.testResults[adapter.key].trialData[action.name]
+    data.trialData = Object.assign({}, data.trialData, newTrialData)
+  }
+
+  TestResults.prototype.onActionChange = function(adapter, action) {
+    var adapterData = this.testResults[adapter.key]
+
+    previousAction = this.currentAction;
+    if (previousAction && previousAction.name) {
+      var actionData = adapterData[previousAction.name]
+      actionData.actionStop = Date.now()
+      actionData.actionTime = actionData.actionStop - actionData.actionStart
+    }
+
+    this.currentAction = action;
+    adapterData[action.name] = {trialData: {}}
+    adapterData[action.name].actionStart = Date.now()
   }
 
   TestResults.prototype.onAdapterChange = function(newAdapter) {
-    this.currentAdapter = newAdapter
+    if (this.currentAdapter && this.currentAdapter.key) {
+      this.finalizeAdapter(this.currentAdapter.key)
+    }
+    this.currentAdapter = newAdapter;
+    this.testResults[this.currentAdapter.key] = {}
+    this.testResults[this.currentAdapter.key].adapterStart = Date.now()
   }
 
-  TestResults.prototype.finalizeAdapter = function(newAdapter) {
+  TestResults.prototype.finalizeAdapter = function(adapterKey) {
     var avgData = {mean: {}, stdev: {}}
-    var adapterData = this.testResults[this.currentAdapter.key]
+    var adapterData = this.testResults[adapterKey]
 
-    for (var labelName in adapterData.labelData) {
-      for (var stageName in adapterData.labelData[labelName]) {
-        for (var stageStat in adapterData.labelData[labelName][stageName]) {
-          if (/Time/.test(stageStat)) {
-            var key = stageName+" "+stageStat
-            if (!avgData.mean[key]) {avgData.mean[key] = []}
-            if (!avgData.stdev[key]) {avgData.stdev[key] = []}
-            avgData.mean[key].push(adapterData.labelData[labelName][stageName][stageStat])
-            avgData.stdev[key].push(adapterData.labelData[labelName][stageName][stageStat])
-          }
-        }
+    adapterData.adapterStop = Date.now()
+    adapterData.adapterTime = adapterData.adapterStop - adapterData.adapterStart
+
+    for (var actionName in adapterData) {
+      if (/action/.test(actionName)) { continue }
+
+      if (!avgData.mean[actionName]) {avgData.mean[actionName] = []}
+      if (!avgData.stdev[actionName]) {avgData.stdev[actionName] = []}
+
+      for (var trialName in adapterData[actionName].trialData) {
+        var time = adapterData[actionName].trialData[trialName].trialTime
+        avgData.mean[actionName].push(time)
+        avgData.stdev[actionName].push(time)
       }
     }
-    for (var meanStat in avgData.mean) {
-      avgData.mean[meanStat] = Math.round(mean(avgData.mean[meanStat]))
+    for (var actionName in avgData.mean) {
+      avgData.mean[actionName] = Math.round(mean(avgData.mean[actionName]))
     }
-    for (var meanStat in avgData.stdev) {
-      avgData.stdev[meanStat] = Math.round(stdev(avgData.stdev[meanStat]))
+    for (var actionName in avgData.stdev) {
+      avgData.stdev[actionName] = Math.round(stdev(avgData.stdev[actionName]))
     }
 
     adapterData.avgData = avgData;
     return adapterData
   }
 
-  TestResults.prototype.finalize = function() {
+  TestResults.prototype.finalizeTestResults = function() {
     console.log("---> Tests Done!");
     this.testResults.testStop = Date.now();
     this.testResults.testTime = this.testResults.testStop - this.testResults.testStart;
+    this.saveToDisk()
   }
 
   TestResults.prototype.saveToDisk = function() {

@@ -1,110 +1,119 @@
-var TestResults = require('./test-results')
+var lastStream = null
 
 var TestRunner = (function() {
-  function TestRunner(config) {
+  function TestRunner(config, testResults) {
     this.config = config;
     this.adapterIndex = -1;
-    this.actionIndex = -1;
-    this.currentAdapter = null;
-    this.nylasAPI = null;
-    this.currentStream = null;
-    this.testResults = new TestResults;
-    this.labelNames = []
-    var now = Date.now();
-    for (var i = 0; i < this.config.NUM_LABELS; i++) {
-      var labelName = "N1-Stress-Test-" + now + "-" + i;
-      this.labelNames.push(labelName);
-    }
+    this.testResults = testResults;
   }
 
-  TestRunner.prototype.run = function() {
-    this.loadNextAdapter()
+  TestRunner.prototype.runNextAdapter = function() {
+    this.actionIndex = -1;
+    return this.loadNextAdapter()
     .then(this.setupDeltaStream.bind(this))
     .then(this.runNextAction.bind(this));
   };
 
-  TestRunner.prototype.setupDeltaStream = function() {
+  TestRunner.prototype.setupDeltaStream = function(adapter) {
+    if (!adapter) { return Promise.resolve() }
     var self = this
-    return new Promise(function(resolve, reject) {
-      if (self.currentStream && self.currentStream.close) {
-        self.currentStream.close()
-      }
-      self.nylasAPI.deltas.latestCursor(function onLatestCursor(err, cursor) {
-        if (err) {
-          return reject(err)
-        }
 
-        self.currentStream = self.nylasAPI.deltas.startStream(cursor, [],
-          {exclude_folders: false});
-        console.log("---> Listening to Nylas Delta with cursor: "+cursor);
-        self.currentStream.on('delta', self.testResults.onDelta.bind(self.testResults)).on('error', function(err) {
-          console.error('Delta streaming error:', err);
-        });
+    nylasAdapter = require("./adapters/nylas.js")
+    return nylasAdapter.setup(adapter.key).then(function(token) {
+      return Promise.resolve(require('nylas').with(token))
+    }).then(function(nylasAPI) {
+      return new Promise(function(resolve, reject){
+        if (lastStream && lastStream.close) { lastStream.close() }
 
-        resolve()
+        nylasAPI.deltas.latestCursor(function(err, cursor) {
+          if (err) { return reject(err) }
+
+          var stream = nylasAPI.deltas.startStream(cursor, [],
+            {exclude_folders: false});
+
+          var msg = "---> Listening to Nylas Delta with cursor: "+cursor
+          console.log(msg);
+
+          var onDelta = self.testResults.onDelta.bind(self.testResults)
+          stream.on('delta', onDelta).on('error', function(err) {
+            console.error('Delta streaming error:', err);
+          });
+
+          lastStream = stream;
+          return resolve(stream)
+        })
       })
-    })
-  }
-
-  TestRunner.prototype.loadNextAdapter = function() {
-    this.adapterIndex += 1;
-    var adapterName = this.config.adapterNames[this.adapterIndex]
-    var requirePath = "./adapters/"+adapterName+".json"
-
-    var nylasTokenForAdapter = require('./credentials.js').nylas[adapterName]
-    this.nylasAPI = require('nylas').with(nylasTokenForAdapter)
-
-    try {
-      self = this;
-      this.currentAdapter = require(requirePath);
-      return this.currentAdapter.setup(adapterName).then(function() {
-        self.testResults.onAdapterChange(self.currentAdapter)
-      })
-    } catch (e) {
-      this.currentAdapter = null;
-      return Promise.reject(new Error("XXX> Can't find "+requirePath));
-    }
-  }
-
-  TestRunner.prototype.runNextAction = function() {
-    this.actionIndex += 1;
-    this.currentAction = this.config.actionNames[this.actionIndex]
-    this.testResults.onStageChange(this.currentAction);
-
-    console.log("---> "+this.currentAction+" on "+adapter.name);
-    var startKey = adapter.key + "Start"
-    var endKey = adapter.key + "End"
-    var timeKey = adapter.key + "Time"
-    var dataKey = adapter.key + "Data"
-    this.labelNames.forEach(function(labelName) {
-      if (!runData.labelData[labelName]) {
-        runData.labelData[labelName] = stageInit()
-      }
-
-      var data = runData.labelData[labelName].create;
-
-      data[startKey] = Date.now();
-      console.log("Creating", labelName)
-      adapter.createLabel(labelName)
-      .then(function(newLabel){
-        data[endKey] = Date.now();
-        data[timeKey] = data[endKey] - data[startKey]
-        runData.labelData[labelName][dataKey] = newLabel;
-        console.log("---> Created '"+labelName+"' in "+data[timeKey]+" ms on "+adapter.name);
-        checkStageAdvance()
-      })
-      .catch(function(err){
-        data[endKey] = Date.now()
-        data[timeKey] = data[endKey] - data[startKey]
-        runData.labelData[labelName][dataKey] = err;
-        console.log("XXX> Error creating '"+labelName+"' in "+data[timeKey]+"ms on "+adapter.name, err);
-        checkStageAdvance()
-      })
+    }).then(function(){
+      return Promise.resolve(adapter)
     });
   }
 
-  TestRunner.prototype.runAction = function() {
+  /**
+   * Calls `setup` on the next adapter.
+   *
+   * Resolves with the new adapter
+   */
+  TestRunner.prototype.loadNextAdapter = function() {
+    this.adapterIndex += 1;
+    var self = this;
+    var adapterKey = this.config.adapterKeys[this.adapterIndex]
+    if (!adapterKey) {
+      return Promise.resolve()
+    } else {
+      var requirePath = "./adapters/"+adapterKey+".js"
+      try {
+        var adapter = require(requirePath);
+        return adapter.setup(adapterKey).then(function() {
+          self.testResults.onAdapterChange(adapter);
+          return Promise.resolve(adapter)
+        })
+      } catch (e) {
+        return Promise.reject(new Error("XXX> Can't find "+requirePath));
+      }
+    }
+  }
 
+  TestRunner.prototype.waitForDeltas = function(adapter, action) {
+    self = this;
+    return new Promise(function(resolve, reject) {
+      var tint = setInterval(function(){
+
+      }, 10)
+
+      var tout = setTimeout(function() {
+        clearInterval(tint)
+        var err = new Error("XXX> Action "+action.name+" timed out waiting for deltas")
+        reject(err)
+      }, self.config.actionTimeout)
+    })
+  }
+
+  TestRunner.prototype.runNextAction = function(adapter) {
+    this.actionIndex += 1;
+    var action = this.config.actions[this.actionIndex]
+    if (action) {
+      this.testResults.onActionChange(adapter, action);
+
+      var adapterDataClone = Object.assign({}, this.testResults[adapter.key])
+
+      self = this;
+      var onTrialData = function(trialData) {
+        self.testResults.onTrialData(adapter, action, trialData)
+      }
+      return action(adapter, onTrialData, adapterDataClone, this.config)
+      .then(function() {
+        return self.waitForDeltas(adapter, action)
+      }).then(function(){
+        return self.runNextAction(adapter)
+      }).catch(function(err){
+        console.error("XXX> Action "+action.name+" had an error");
+        console.error(err)
+        return self.runNextAction(adapter)
+      })
+
+    } else {
+      return this.runNextAdapter()
+    }
   }
 
   return TestRunner;
