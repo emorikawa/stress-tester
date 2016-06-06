@@ -89,20 +89,18 @@ var TestResults = (function() {
 
     try {
       var trialName = this.currentAction.trialNameFromDelta(delta, trialData);
-      console.log(this.testResults[this.currentAdapter.key])
-      console.log(trialName);
       var now = Date.now();
       trialData[trialName].deltaAt = now
       trialData[trialName].deltaTime = now - trialData[trialName].trialStart
       console.log("---> DELTA: "+this.currentAction.key+" '"+trialName+"' "+trialData[trialName].deltaTime+" ms since "+this.currentAdapter.key+" start")
     } catch (err) {
       console.error('Delta streaming parse error:');
-      console.error(err);
+      throw err
     }
   }
 
   TestResults.prototype.waitForDeltas = function(adapter, action, actionTimeout) {
-    self = this;
+    var self = this;
     return new Promise(function(resolve, reject) {
       var tint = setInterval(function(){
         var data = self.testResults[adapter.key][action.key].trialData;
@@ -150,7 +148,6 @@ var TestResults = (function() {
     this.currentAdapter = newAdapter;
     this.testResults[this.currentAdapter.key] = {}
     this.testResults[this.currentAdapter.key].adapterStart = Date.now();
-    console.log("onAdapterChange")
   }
 
   TestResults.prototype.finalizeAdapter = function(adapterKey) {
@@ -185,7 +182,11 @@ var TestResults = (function() {
   }
 
   TestResults.prototype.finalizeTestResults = function() {
-    console.log("---> Tests Done!");
+    if (this.errors) {
+      this.testResults.errors = this.errors.map(function(err){
+        return { message: err.message, stack: err.stack }
+      })
+    }
     this.testResults.testStop = Date.now();
     this.testResults.testTime = this.testResults.testStop - this.testResults.testStart;
     this.saveToDisk()

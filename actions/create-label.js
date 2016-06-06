@@ -1,7 +1,10 @@
 var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
   console.log("---> Creating Labels on "+adapter.name);
 
-  return Promise.all(config.trialNames.map(function(labelName) {
+  var promiseChain = Promise.resolve();
+  var errors = []
+
+  config.trialNames.forEach(function(labelName) {
     var actionData = {}
     actionData[labelName] = {}
     var data = actionData[labelName]
@@ -9,22 +12,31 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
     data.trialStart = Date.now();
     console.log("Creating", labelName)
 
-    return adapter.createLabel(labelName)
-    .then(function(newLabel){
-      data.trialStop = Date.now();
-      data.trialTime = data.trialStop - data.trialStart
-      data.rawServerData = newLabel;
-      onTrialData(actionData)
-      console.log("---> Created '"+labelName+"' in "+data.trialTime+" ms on "+adapter.name);
+    promiseChain = promiseChain.then(function(){
+      return adapter.createLabel(labelName)
+      .then(function(newLabel){
+        data.trialStop = Date.now();
+        data.trialTime = data.trialStop - data.trialStart
+        data.rawServerData = newLabel;
+        onTrialData(actionData)
+        console.log("---> Created '"+labelName+"' in "+data.trialTime+" ms on "+adapter.name);
+      })
+      .catch(function(err){
+        data.trialStop = Date.now()
+        data.trialTime = data.trialStop - data.trialStart
+        data.rawServerData = err;
+        onTrialData(actionData);
+        console.error("XXX> Error creating '"+labelName+"' in "+data.trialTime+"ms on "+adapter.name);
+        errors.push(err)
+      })
     })
-    .catch(function(err){
-      data.trialStop = Date.now()
-      data.trialTime = data.trialStop - data.trialStart
-      data.rawServerData = err;
-      onTrialData(actionData)
-      console.log("XXX> Error creating '"+labelName+"' in "+data.trialTime+"ms on "+adapter.name, err);
-    })
-  }));
+  });
+
+  return promiseChain.then(function(){
+    if (errors.length > 0) {
+      throw new Error("")
+    }
+  })
 }
 createLabel.key = "createLabel"
 

@@ -1,10 +1,12 @@
+var labelPrefix = require('./config.js').labelPrefix
+var prefixRe = new RegExp(labelPrefix, 'gi')
 module.exports = function cleanup(testRunner) {
   if (testRunner.adapterIndex < testRunner.config.adapterKeys.length) {
     return testRunner.loadNextAdapter().then(function(adapter){
       console.log("---> Cleaning up N1-Stress-Test categories on "+adapter.name)
       return adapter.list().then(function(labels) {
-        var toDelete = labels.filter(function(label){
-          return (/N1-Stress-Test/.test(label.name))
+        var toDelete = labels.filter(function(labelData){
+          return (prefixRe.test(labelData.name))
         })
         console.log("---> Found "+toDelete.length+" categories to delete")
         return Promise.all(toDelete.map(function(labelData) {

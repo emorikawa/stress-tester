@@ -9,17 +9,13 @@ if (process.argv[2] === "cleanup") {
     process.exit()
   })
 } else {
-  testRunner.runNextAdapter()
-  .then(testResults.finalizeTestResults.bind(testResults))
-  .catch(function(err){
-    console.error("XXX> Error running tests")
-    console.error(err)
-    testResults.finalizeTestResults.bind(testResults)()
-  })
+  testRunner.run()
+  .then(function(){ process.exit(0) })
+  .catch(function(){ process.exit(1) })
 
   process.on('SIGINT', function() {
     testResults.finalizeTestResults();
-    process.exit();
+    process.exit(1);
   });
 }
 
