@@ -77,7 +77,7 @@ var TestResults = (function() {
   }
 
   TestResults.prototype.onDelta = function(delta) {
-    if (!delta || !delta.attributes) {
+    if (!delta) {
       console.error("XXX> Malformed delta", delta)
       return;
     }

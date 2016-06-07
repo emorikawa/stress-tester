@@ -63,7 +63,7 @@ module.exports = {
   },
   createLabel: function(name) {
     var p = new Promise(function(resolve, reject) {
-      setup.imap.addBox(name, function(err){
+      imap.addBox(name, function(err){
         if (err) {return reject(err)}
         else {resolve({name: name})}
       })
@@ -72,7 +72,7 @@ module.exports = {
   },
   deleteLabel: function(remoteData) {
     var p = new Promise(function(resolve, reject) {
-      setup.imap.delBox(remoteData.name, function(err){
+      imap.delBox(remoteData.name, function(err){
         if (err) {return reject(err)}
         else {resolve()}
       })
@@ -81,7 +81,7 @@ module.exports = {
   },
   list: function() {
     var p = new Promise(function(resolve, reject) {
-      setup.imap.getBoxes(function(err, boxes){
+      imap.getBoxes(function(err, boxes){
         var folders = []
         if (err) { return reject(err) }
         for (var folderName in boxes) {

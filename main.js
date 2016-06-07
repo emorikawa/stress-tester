@@ -11,11 +11,13 @@ if (process.argv[2] === "cleanup") {
 } else {
   testRunner.run()
   .then(function(){ process.exit(0) })
-  .catch(function(){ process.exit(1) })
+  .catch(function(){
+    testResults.finalizeTestResults();
+    process.exit(1)
+  })
 
   process.on('SIGINT', function() {
     testResults.finalizeTestResults();
     process.exit(1);
   });
 }
-

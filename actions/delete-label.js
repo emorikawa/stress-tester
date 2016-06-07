@@ -42,7 +42,7 @@ deleteLabel.isMatchingDelta = function(delta) {
 
 deleteLabel.trialNameFromDelta = function(delta, trialData) {
   for (var labelName in trialData) {
-    if (trialData[trialName].rawServerData.id === delta.id) {
+    if (trialData[labelName].rawServerData.id === delta.id) {
       return labelName;
     }
   }
