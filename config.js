@@ -13,7 +13,7 @@ var deleteLabel = require('./actions/delete-label.js')
 var config = {
   actions: [createLabel, updateLabel, deleteLabel],
   trialNames: trialNames,
-  adapterKeys: ["gmail"],
+  adapterKeys: ["imap"],
   labelPrefix: LABEL_PREFIX,
   actionTimeout: 1000 * 60 * 1 // 1 minute,
 }
