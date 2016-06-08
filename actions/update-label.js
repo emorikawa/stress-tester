@@ -4,23 +4,11 @@ var updateLabel = function(adapter, onTrialData, config) {
   var promiseChain = Promise.resolve()
   var errors = []
   var labelPrefix = require('../config.js').labelPrefix
-  //get list of labels to change
+
   var now = Date.now()
   var count = 0
 
-  // config.trialNames.forEach(function(labelName) {
-  //
-  //   console.log("Updating ", labelName)
-  //   promiseChain = promiseChain.then(function(){
-  //     var newName = labelPrefix + now + "-" + count
-  //     count++
-  //     return adapter.updateLabel(newName, )
-  //     .then()
-  //   })
-  // })
-
   return adapter.list().then(function(labels) {
-    //list of all folders
     var toRename = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
       return(prefixRe.test(labelData.name))
