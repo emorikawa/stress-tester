@@ -2,9 +2,9 @@ var deleteLabel = function(adapter, onTrialData) {
   console.log("---> Deleting Labels on "+adapter.name);
 
   var labelPrefix = require('../config.js').labelPrefix
-  var prefixRe = new RegExp(labelPrefix, 'gi')
   return adapter.list().then(function(labels) {
     var toDelete = labels.filter(function(labelData){
+      var prefixRe = new RegExp(labelPrefix, 'gi')
       return (prefixRe.test(labelData.name))
     })
     return Promise.all(toDelete.map(function(labelData) {
@@ -37,12 +37,12 @@ var deleteLabel = function(adapter, onTrialData) {
 deleteLabel.key = "deleteLabel"
 
 deleteLabel.isMatchingDelta = function(delta) {
-  return delta.event === "create" && (delta.object === "label" || delta.object === "folder")
+  return delta.event === "delete" && (delta.object === "label" || delta.object === "folder")
 }
 
-deleteLabel.trialNameFromDelta = function(delta, trialData) {
-  for (var labelName in trialData) {
-    if (trialData[labelName].rawServerData.id === delta.id) {
+deleteLabel.trialNameFromDelta = function(delta, nylasIdLookup) {
+  for (var labelName in nylasIdLookup) {
+    if (nylasIdLookup[labelName] === delta.id) {
       return labelName;
     }
   }

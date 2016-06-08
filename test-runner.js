@@ -44,7 +44,9 @@ var TestRunner = (function() {
 
     nylasAdapter = require("./adapters/nylas.js")
     return nylasAdapter.setup(adapter.key).then(function(token) {
-      return Promise.resolve(require('nylas').with(token))
+      return Promise.resolve(require('nylas').config({
+        apiServer: 'https://api-staging.nylas.com'
+      }).with(token))
     }).then(function(nylasAPI) {
       return new Promise(function(resolve, reject){
         if (lastStream && lastStream.close) { lastStream.close() }

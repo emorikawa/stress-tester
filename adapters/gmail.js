@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+
 var configDir = path.join(process.env.HOME, ".credentials")
 
 var gmailCredentials = require(path.join(configDir, "gmail.json"))
@@ -48,4 +49,3 @@ module.exports = {
     })
   },
 }
-

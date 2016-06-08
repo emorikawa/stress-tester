@@ -21,6 +21,8 @@ function stdev(values) {
  *
  * testResults:
  *   gmail: (adapter.key)
+       nylasIdLookup:
+        "N1-Stress-Test-00000" : nylasId
  *     createLabel: (action.key)
  *       trialData:
  *         "N1-Stress-Test-00000-1": (trialName)
@@ -85,10 +87,15 @@ var TestResults = (function() {
       return;
     }
 
+
+
     var trialData = this.testResults[this.currentAdapter.key][this.currentAction.key].trialData
 
     try {
-      var trialName = this.currentAction.trialNameFromDelta(delta, trialData);
+      var trialName = this.currentAction.trialNameFromDelta(delta, this.testResults[this.currentAdapter.key]["nylasIdLookup"]);
+      if (trialName && delta.attributes && delta.attributes.id) {
+        this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialName] = delta.attributes.id;
+      }
       var now = Date.now();
       trialData[trialName].deltaAt = now
       trialData[trialName].deltaTime = now - trialData[trialName].trialStart
@@ -147,6 +154,7 @@ var TestResults = (function() {
     }
     this.currentAdapter = newAdapter;
     this.testResults[this.currentAdapter.key] = {}
+    this.testResults[this.currentAdapter.key]["nylasIdLookup"] = {}
     this.testResults[this.currentAdapter.key].adapterStart = Date.now();
   }
 

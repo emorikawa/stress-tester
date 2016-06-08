@@ -10,7 +10,8 @@ if (process.argv[2] === "cleanup") {
   })
 } else {
   testRunner.run()
-  .then(function(){ process.exit(0) })
+  .then(function(){
+    process.exit(0) })
   .catch(function(){
     testResults.finalizeTestResults();
     process.exit(1)
