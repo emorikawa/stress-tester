@@ -48,4 +48,10 @@ module.exports = {
       return Promise.resolve(data)
     })
   },
+  updateLabel: function(newName, remoteData) {
+    return gmail.users.labels.update({
+      id: remoteData.id,
+      resource: {name: newName}
+    })
+  }
 }

@@ -79,6 +79,14 @@ module.exports = {
     });
     return retryImapIfTimeout(p)
   },
+  updateLabel: function(remoteData, newName) {
+    var p = new Promise(function(resolve, reject){
+      imap.renameBox(remoteData.name, newName, function(err){
+        if (err) {return reject(err)}
+        else {resolve()}
+      })
+    })
+  },
   list: function() {
     var p = new Promise(function(resolve, reject) {
       imap.getBoxes(function(err, boxes){

@@ -7,7 +7,7 @@ var deleteLabel = function(adapter, onTrialData) {
       var prefixRe = new RegExp(labelPrefix, 'gi')
       return (prefixRe.test(labelData.name))
     })
-    return Promise.all(toDelete.map(function(labelData) {
+    return Promise.all(toDelete.map(function(labelData){
       var actionData = {}
       var labelName = labelData.name
       actionData[labelName] = {}

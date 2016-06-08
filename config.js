@@ -8,9 +8,10 @@ for (var i = 0; i < NUM_LABELS; i++) {
 }
 
 var createLabel = require('./actions/create-label.js')
+var updateLabel = require('./actions/update-label.js')
 var deleteLabel = require('./actions/delete-label.js')
 var config = {
-  actions: [createLabel, deleteLabel],
+  actions: [createLabel, updateLabel, deleteLabel],
   trialNames: trialNames,
   adapterKeys: ["gmail"],
   labelPrefix: LABEL_PREFIX,
