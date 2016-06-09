@@ -38,16 +38,15 @@ var TestRunner = (function() {
     .then(this.runNextAction.bind(this));
   };
 
+
   TestRunner.prototype.setupDeltaStream = function(adapter) {
     if (!adapter) { return Promise.resolve() }
     var self = this;
 
     nylasAdapter = require("./adapters/nylas.js")
-    return nylasAdapter.setup(adapter.key).then(function(token) {
-      return Promise.resolve(require('nylas').config({
-        apiServer: 'https://api-staging.nylas.com'
-      }).with(token))
-    }).then(function(nylasAPI) {
+
+    return nylasAdapter.setup(adapter.key)
+    .then(function(nylasAPI) {
       return new Promise(function(resolve, reject){
         if (lastStream && lastStream.close) { lastStream.close() }
 
@@ -115,7 +114,7 @@ var TestRunner = (function() {
       return action(adapter, onTrialData, adapterDataClone, this.config)
       .then(function() {
         //update this
-        return self.testResults.waitForDeltas(adapter, action, action.key === "" ? self.config.actionTimeout : 1000)
+        return self.testResults.waitForDeltas(adapter, action, action.key === "" ? self.config.actionTimeout : 10000)
       }).then(function(){
         return self.runNextAction(adapter)
       }).catch(function(err){

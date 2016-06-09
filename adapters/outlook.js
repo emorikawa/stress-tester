@@ -62,7 +62,7 @@ module.exports = {
       })
     })
   },
-  list: function() {
+  listLabels: function() {
     return new Promise(function(resolve, reject){
       var url = FOLDER_PARAMS.baseUrl
       var params = Object.assign({}, FOLDER_PARAMS, {

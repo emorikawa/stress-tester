@@ -10,7 +10,10 @@ module.exports = {
   key: "nylas",
   name: "Nylas API",
   setup: function(adapterKey) {
-    return Promise.resolve(nylasCredentials[adapterKey])
+    nylasAPI = require('nylas').config({
+      apiServer: 'https://api-staging.nylas.com'
+    }).with(nylasCredentials[adapterKey])
+    return Promise.resolve(nylasAPI)
   },
   createLabel: function(name) {
     var lbl = nylasAPI.labels.build({displayName: name});
@@ -19,7 +22,7 @@ module.exports = {
   deleteLabel: function(remoteData) {
     return nylasAPI.labels.delete(remoteData.id);
   },
-  list: function() {
+  listLabels: function() {
     return nylasAPI.labels.list({})
   },
 }

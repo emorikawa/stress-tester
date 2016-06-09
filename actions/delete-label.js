@@ -2,7 +2,7 @@ var deleteLabel = function(adapter, onTrialData) {
   console.log("---> Deleting Labels on "+adapter.name);
 
   var labelPrefix = require('../config.js').labelPrefix
-  return adapter.list().then(function(labels) {
+  return adapter.listLabels().then(function(labels) {
     var toDelete = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
       return (prefixRe.test(labelData.name))

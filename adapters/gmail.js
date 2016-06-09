@@ -43,7 +43,7 @@ module.exports = {
   deleteLabel: function(remoteData) {
     return gmail.users.labels.delete({id: remoteData.id})
   },
-  list: function() {
+  listLabels: function() {
     return gmail.users.labels.list().then(function(response){
       var data = response.labels.map(function(label) {
         return {
@@ -54,14 +54,17 @@ module.exports = {
       return Promise.resolve(data)
     })
   },
+  listMessages: function(remoteData) {
+    return gmail.users.messages.list({resource: {labelsIds: remoteData.id}})
+  },
   updateLabel: function(newName, remoteData) {
     return gmail.users.labels.update({
       id: remoteData.id,
       resource: {name: newName}
     })
   },
-  addEmail: function(remoteData, date) {
+  addMessage: function(remoteData, date) {
     console.log(remoteData.id)
     return gmail.users.messages.insert({userId: "me", resource: {raw: base64("encode me"), labelIds: [remoteData.id]}})
-  },
+  }
 }

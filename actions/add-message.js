@@ -1,8 +1,8 @@
-var addEmail = function(adapter, onTrialData){
-  console.log("---> Adding Emails on "+adapter.name)
+var addMessage = function(adapter, onTrialData){
+  console.log("---> Adding message on "+adapter.name)
   var labelPrefix = require('../config.js').labelPrefix
 
-  return adapter.list().then(function(labels){
+  return adapter.listLabels().then(function(labels){
     var toAddToo = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
       return (prefixRe.test(labelData.name))
@@ -17,35 +17,35 @@ var addEmail = function(adapter, onTrialData){
       data.rawServerData = labelData
 
 
-      console.log("Adding email to", labelName)
+      console.log("Adding message to", labelName)
 
-      return adapter.addEmail(labelData, Date.now())
+      return adapter.addMessage(labelData, Date.now())
       .then(function(){
         data.trialStop = Date.now();
         data.trialTime = data.trialStop - data.trialStart
         onTrialData(actionData)
-        console.log("---> Added email to '"+labelName+"' in "+data.trialTime+" ms on "+adapter.name);
+        console.log("---> Added message to '"+labelName+"' in "+data.trialTime+" ms on "+adapter.name);
       })
       .catch(function(err){
         data.trialStop = Date.now()
         data.trialTime = data.trialStop - data.trialStart
         onTrialData(actionData)
-        console.log("XXX> Error adding email to '"+labelName+"' in "+data.trialTime+"ms on "+adapter.name);
+        console.log("XXX> Error adding message to '"+labelName+"' in "+data.trialTime+"ms on "+adapter.name);
         throw err
       })
     }))
   })
 }
-addEmail.key = "addEmail"
+addMessage.key = "addMessage"
 
-addEmail.isMatchingDelta = function(delta){
+addMessage.isMatchingDelta = function(delta){
   return delta.event === "modify" && delta.object === "message"
 }
 
-addEmail.trialNameFromDelta = function(delta){
+addMessage.trialNameFromDelta = function(delta){
   var keyName = delta.attributes.display_name;
   var parts = keyName.split("\\");
   keyName = parts[parts.length - 1]
   return keyName
 }
-module.exports = addEmail
+module.exports = addMessage
