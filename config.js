@@ -10,10 +10,11 @@ for (var i = 0; i < NUM_LABELS; i++) {
 var createLabel = require('./actions/create-label.js')
 var updateLabel = require('./actions/update-label.js')
 var deleteLabel = require('./actions/delete-label.js')
+var addEmail = require('./actions/add-email.js')
 var config = {
-  actions: [createLabel, updateLabel, deleteLabel],
+  actions: [addEmail],
   trialNames: trialNames,
-  adapterKeys: ["imap"],
+  adapterKeys: ["gmail"],
   labelPrefix: LABEL_PREFIX,
   actionTimeout: 1000 * 60 * 1 // 1 minute,
 }

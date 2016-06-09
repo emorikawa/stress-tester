@@ -1,8 +1,7 @@
 var updateLabel = function(adapter, onTrialData, config) {
   console.log("---> Updating Labels on "+adapter.name);
 
-  var promiseChain = Promise.resolve()
-  var errors = []
+
   var labelPrefix = require('../config.js').labelPrefix
 
   var now = Date.now()
@@ -11,7 +10,7 @@ var updateLabel = function(adapter, onTrialData, config) {
   return adapter.list().then(function(labels) {
     var toRename = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
-      return(prefixRe.test(labelData.name))
+      return (prefixRe.test(labelData.name))
     })
     return Promise.all(toRename.map(function(labelData){
       var actionData = {}
@@ -46,7 +45,7 @@ var updateLabel = function(adapter, onTrialData, config) {
 updateLabel.key = "updateLabel"
 
 updateLabel.isMatchingDelta = function(delta){
-  return delta.event === "update" && (delta.object === "label" || delta.object === "folder")
+  return delta.event === "modify" && (delta.object === "label" || delta.object === "folder")
 }
 
 updateLabel.trialNameFromDelta = function(delta){

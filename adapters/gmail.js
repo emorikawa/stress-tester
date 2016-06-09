@@ -1,5 +1,6 @@
 var fs = require('fs');
 var path = require('path');
+var base64 = require('base64url')
 
 var configDir = path.join(process.env.HOME, ".credentials")
 
@@ -13,19 +14,24 @@ googleOAuth2.credentials = gmailCredentials
 var gmail = require('googleapis').gmail('v1');
 var defaultGmailArgs = {auth: googleOAuth2, userId: "me"}
 
-Object.keys(gmail.users.labels).forEach(function(key) {
-  var origFn = gmail.users.labels[key]
-  var newFn = function(arg) {
-    return new Promise(function(resolve, reject) {
-      var newArg = Object.assign({}, defaultGmailArgs, arg)
-      origFn(newArg, function(err, response) {
-        if (err) { return reject(err) }
-        return resolve(response)
+var toPromise = [gmail.users.labels, gmail.users.messages]
+
+toPromise.map(function(gmailObj) {
+  Object.keys(gmailObj).forEach(function(key) {
+    var origFn = gmailObj[key]
+    var newFn = function(arg) {
+      return new Promise(function(resolve, reject) {
+        var newArg = Object.assign({}, defaultGmailArgs, arg)
+        origFn(newArg, function(err, response) {
+          if (err) { return reject(err) }
+          return resolve(response)
+        })
       })
-    })
-  }
-  gmail.users.labels[key] = newFn
+    }
+   gmailObj[key] = newFn
+  })
 })
+
 
 module.exports = {
   key: "gmail",
@@ -53,5 +59,9 @@ module.exports = {
       id: remoteData.id,
       resource: {name: newName}
     })
-  }
+  },
+  addEmail: function(remoteData, date) {
+    console.log(remoteData.id)
+    return gmail.users.messages.insert({userId: "me", resource: {raw: base64("encode me"), labelIds: [remoteData.id]}})
+  },
 }

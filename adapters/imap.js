@@ -88,6 +88,17 @@ module.exports = {
     })
     return retryImapIfTimeout(p)
   },
+  addEmail: function(remoteData, date){
+    var p = new Promise(function(resolve, reject){
+      imap.append(date.toString(), {mailbox: remoteData.name}, function(err) {
+        if (err) {
+          console.log(err);
+          return reject(err)}
+        else {resolve()}
+      })
+    })
+    return retryImapIfTimeout(p)
+  },
   list: function() {
     var p = new Promise(function(resolve, reject) {
       imap.getBoxes(function(err, boxes){
