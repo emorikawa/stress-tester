@@ -3,30 +3,35 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
 
   var promiseChain = Promise.resolve();
   var errors = []
+//create labelKey
+//use this as key
+//set displayName initialized to labelKey
 
-  config.trialNames.forEach(function(labelName) {
+//find and replace labelName in some places
+  config.trialKeys.forEach(function(labelKey) {
     var actionData = {}
-    actionData[labelName] = {}
-    var data = actionData[labelName]
-
+    actionData[labelKey] = {}
+    var data = actionData[labelKey]
+    console.log("data: ", data)
     data.trialStart = Date.now();
-    console.log("Creating", labelName)
+    data.labelName = labelKey
+    console.log("Creating", data.labelName)
 
     promiseChain = promiseChain.then(function(){
-      return adapter.createLabel(labelName)
+      return adapter.createLabel(data.labelName)
       .then(function(newLabel){
         data.trialStop = Date.now();
         data.trialTime = data.trialStop - data.trialStart
         data.rawServerData = newLabel;
         onTrialData(actionData)
-        console.log("---> Created '"+labelName+"' in "+data.trialTime+" ms on "+adapter.name);
+        console.log("---> Created '"+data.labelName+"' in "+data.trialTime+" ms on "+adapter.name);
       })
       .catch(function(err){
         data.trialStop = Date.now()
         data.trialTime = data.trialStop - data.trialStart
         data.rawServerData = err;
         onTrialData(actionData);
-        console.error("XXX> Error creating '"+labelName+"' in "+data.trialTime+"ms on "+adapter.name);
+        console.error("XXX> Error creating '"+data.labelName+"' in "+data.trialTime+"ms on "+adapter.name);
         errors.push(err)
       })
     })
