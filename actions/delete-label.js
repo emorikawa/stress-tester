@@ -5,18 +5,17 @@ var deleteLabel = function(adapter, onTrialData) {
   return adapter.listLabels().then(function(labels) {
     var toDelete = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
-      return (prefixRe.test(labelData.name))
+      return (prefixRe.test(adapter.key === "nylas" ? labelData.displayName : labelData.name))
     })
     return Promise.all(toDelete.map(function(labelData){
       var actionData = {}
-      var labelName = labelData.name
+      var labelName = adapter.key === "nylas" ? labelData.displayName : labelData.name
       actionData[labelName] = {}
       var data = actionData[labelName]
 
       data.trialStart = Date.now();
       data.rawServerData = labelData
       console.log("Deleting", labelName)
-
       return adapter.deleteLabel(labelData)
       .then(function(){
         data.trialStop = Date.now();
@@ -41,12 +40,14 @@ deleteLabel.isMatchingDelta = function(delta) {
 }
 
 deleteLabel.trialNameFromDelta = function(delta, nylasIdLookup) {
+  console.log("delta: ",delta, "nylasidLook: ", nylasIdLookup)
+
   for (var labelName in nylasIdLookup) {
+    console.log("label name: ", labelName)
     if (nylasIdLookup[labelName] === delta.id) {
       return labelName;
     }
   }
-  console.error(trialData)
   throw new Error("XXX> Couldn't find label with ID of "+delta.id)
 }
 

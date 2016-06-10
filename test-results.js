@@ -90,12 +90,13 @@ var TestResults = (function() {
 
 
     var trialData = this.testResults[this.currentAdapter.key][this.currentAction.key].trialData
-
+    console.log("trial data: ", trialData)
     try {
       var trialName = this.currentAction.trialNameFromDelta(delta, this.testResults[this.currentAdapter.key]["nylasIdLookup"]);
       if (trialName && delta.attributes && delta.attributes.id) {
         this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialName] = delta.attributes.id;
       }
+
       var now = Date.now();
       trialData[trialName].deltaAt = now
       trialData[trialName].deltaTime = now - trialData[trialName].trialStart

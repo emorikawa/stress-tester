@@ -34,7 +34,7 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
 
   return promiseChain.then(function(){
     if (errors.length > 0) {
-      throw new Error("")
+      throw new Error(errors)
     }
   })
 }

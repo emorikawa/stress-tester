@@ -6,15 +6,14 @@ var updateLabel = function(adapter, onTrialData, config) {
 
   var now = Date.now()
   var count = 0
-
   return adapter.listLabels().then(function(labels) {
     var toRename = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
-      return (prefixRe.test(labelData.name))
+      return (prefixRe.test(adapter.key === "nylas" ? labelData.displayName : labelData.name))
     })
     return Promise.all(toRename.map(function(labelData){
       var actionData = {}
-      var labelName = labelData.name
+      var labelName = adapter.key === "nylas" ? labelData.displayName : labelData.name
       actionData[labelName] = {}
       var data = actionData[labelName]
 
@@ -50,6 +49,7 @@ updateLabel.isMatchingDelta = function(delta){
 
 updateLabel.trialNameFromDelta = function(delta){
   var keyName = delta.attributes.display_name;
+  console.log("keyname: ", keyName)
   var parts = keyName.split("\\");
   keyName = parts[parts.length - 1]
   return keyName

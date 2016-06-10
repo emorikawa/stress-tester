@@ -6,23 +6,30 @@ var nylasCredentials = require(path.join(configDir, "nylas.json"))
 var nylasAPI = null;
 var currentStream = null;
 
+//*** switch out depending on provider -- there is a probs better way to do this
+var provider = "imap"
+
 module.exports = {
   key: "nylas",
   name: "Nylas API",
-  setup: function(adapterKey) {
+  setup: function() {
     nylasAPI = require('nylas').config({
       apiServer: 'https://api-staging.nylas.com'
-    }).with(nylasCredentials[adapterKey])
+    }).with(nylasCredentials[provider])
     return Promise.resolve(nylasAPI)
   },
   createLabel: function(name) {
-    var lbl = nylasAPI.labels.build({displayName: name});
+    var lbl = (provider === "gmail" ? nylasAPI.labels.build({displayName: name}) : nylasAPI.folders.build({displayName: name}));
     return lbl.save()
   },
   deleteLabel: function(remoteData) {
-    return nylasAPI.labels.delete(remoteData.id);
+    return (provider === "gmail" ? nylasAPI.labels.delete(remoteData.id) : nylasAPI.folders.delete(remoteData.id))
+  },
+  updateLabel: function(newName, remoteData) {
+    remoteData.displayName = newName
+    return remoteData.save()
   },
   listLabels: function() {
-    return nylasAPI.labels.list({})
+    return (provider === "gmail" ? nylasAPI.labels.list({}) : nylasAPI.folders.list({}))
   },
 }

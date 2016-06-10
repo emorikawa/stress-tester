@@ -114,7 +114,7 @@ var TestRunner = (function() {
       return action(adapter, onTrialData, adapterDataClone, this.config)
       .then(function() {
         //update this
-        return self.testResults.waitForDeltas(adapter, action, action.key === "" ? self.config.actionTimeout : 10000)
+        return self.testResults.waitForDeltas(adapter, action, self.config.actionTimeout)
       }).then(function(){
         return self.runNextAction(adapter)
       }).catch(function(err){
