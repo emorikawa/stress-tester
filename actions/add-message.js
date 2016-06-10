@@ -42,7 +42,7 @@ addMessage.isMatchingDelta = function(delta){
   return delta.event === "modify" && delta.object === "message"
 }
 
-addMessage.trialNameFromDelta = function(delta){
+addMessage.trialKeyFromDelta = function(delta){
   var keyName = delta.attributes.display_name;
   var parts = keyName.split("\\");
   keyName = parts[parts.length - 1]

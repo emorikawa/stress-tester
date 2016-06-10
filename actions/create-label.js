@@ -12,7 +12,6 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
     var actionData = {}
     actionData[labelKey] = {}
     var data = actionData[labelKey]
-    console.log("data: ", data)
     data.trialStart = Date.now();
     data.labelKey = labelKey
     console.log("Creating", data.labelKey)
@@ -49,7 +48,7 @@ createLabel.isMatchingDelta = function(delta) {
   return delta.event === "create" && (delta.object === "label" || delta.object === "folder")
 }
 
-createLabel.trialNameFromDelta = function(delta) {
+createLabel.trialKeyFromDelta = function(delta) {
   var keyName = delta.attributes.display_name;
   var parts = keyName.split("\\");
   keyName = parts[parts.length - 1]

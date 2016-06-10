@@ -29,6 +29,7 @@ var updateLabel = function(adapter, onTrialData, config) {
       .then(function(){
         data.trialStop = Date.now();
         data.trialTime = data.trialStop - data.trialStart
+
         onTrialData(actionData)
         console.log("---> Updated '"+data.labelKey+"' in "+data.trialTime+" ms on "+adapter.name);
       })
@@ -48,21 +49,14 @@ updateLabel.isMatchingDelta = function(delta){
   return delta.event === "modify" && (delta.object === "label" || delta.object === "folder")
 }
 
-updateLabel.trialNameFromDelta = function(delta, nylasIdLookup){
+updateLabel.trialKeyFromDelta = function(delta, nylasIdLookup){
   for (var labelKey in nylasIdLookup) {
-    if(nylasIdLookup[labelKey] === delta.id) {
+    if(nylasIdLookup[labelKey].nylasId === delta.id) {
       return labelKey
     }
   }
   throw new Error("XXX> Couldn't find and update label with ID of "+delta.id)
 
-  // console.log("delta: ", delta)
-  // console.log("nyId: ", nylasIdLookup)
-  // var keyName = delta.attributes.display_name;
-  // console.log("keyname: ", keyName)
-  // var parts = keyName.split("\\");
-  // keyName = parts[parts.length - 1]
-  // return keyName
 }
 
 module.exports = updateLabel

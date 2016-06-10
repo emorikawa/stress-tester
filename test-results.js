@@ -86,26 +86,25 @@ var TestResults = (function() {
     if (!this.currentAction.isMatchingDelta(delta)) {
       return;
     }
-
-
-
     var trialData = this.testResults[this.currentAdapter.key][this.currentAction.key].trialData
-    console.log("trial data: ", trialData)
-    try {
-      var trialName = this.currentAction.trialNameFromDelta(delta, this.testResults[this.currentAdapter.key]["nylasIdLookup"]);
-      if (trialName && delta.attributes && delta.attributes.id) {
-        this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialName] = delta.attributes.id;
+    var trialKey = this.currentAction.trialKeyFromDelta(delta, this.testResults[this.currentAdapter.key]["nylasIdLookup"]);
+    if(delta.event === "create"){
+      if (trialKey && delta.attributes && delta.attributes.id) {
+        this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey] = {
+          nylasId: delta.attributes.id,
+        }
       }
-
-      var now = Date.now();
-      trialData[trialName].deltaAt = now
-      trialData[trialName].deltaTime = now - trialData[trialName].trialStart
-      console.log("---> DELTA: "+this.currentAction.key+" '"+trialName+"' "+trialData[trialName].deltaTime+" ms since "+this.currentAdapter.key+" start")
-    } catch (err) {
-      console.error('Delta streaming parse error:');
-      throw err
     }
+    if(delta.event = "update" && delta.attributes) {
+      this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey].newName = delta.attributes.display_name
+    }
+
+    var now = Date.now();
+    trialData[trialKey].deltaAt = now
+    trialData[trialKey].deltaTime = now - trialData[trialKey].trialStart
+    console.log("**** DELTA: "+this.currentAction.key+" '"+trialKey+"' "+trialData[trialKey].deltaTime+" ms since "+this.currentAdapter.key+" start")
   }
+
 
   TestResults.prototype.waitForDeltas = function(adapter, action, actionTimeout) {
     var self = this;
