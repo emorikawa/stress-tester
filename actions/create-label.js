@@ -14,24 +14,24 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
     var data = actionData[labelKey]
     console.log("data: ", data)
     data.trialStart = Date.now();
-    data.labelName = labelKey
-    console.log("Creating", data.labelName)
+    data.labelKey = labelKey
+    console.log("Creating", data.labelKey)
 
     promiseChain = promiseChain.then(function(){
-      return adapter.createLabel(data.labelName)
+      return adapter.createLabel(data.labelKey)
       .then(function(newLabel){
         data.trialStop = Date.now();
         data.trialTime = data.trialStop - data.trialStart
         data.rawServerData = newLabel;
         onTrialData(actionData)
-        console.log("---> Created '"+data.labelName+"' in "+data.trialTime+" ms on "+adapter.name);
+        console.log("---> Created '"+data.labelKey+"' in "+data.trialTime+" ms on "+adapter.name);
       })
       .catch(function(err){
         data.trialStop = Date.now()
         data.trialTime = data.trialStop - data.trialStart
         data.rawServerData = err;
         onTrialData(actionData);
-        console.error("XXX> Error creating '"+data.labelName+"' in "+data.trialTime+"ms on "+adapter.name);
+        console.error("XXX> Error creating '"+data.labelKey+"' in "+data.trialTime+"ms on "+adapter.name);
         errors.push(err)
       })
     })

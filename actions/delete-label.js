@@ -8,6 +8,7 @@ var deleteLabel = function(adapter, onTrialData) {
       return (prefixRe.test(adapter.key === "nylas" ? labelData.displayName : labelData.name))
     })
     return Promise.all(toDelete.map(function(labelData){
+      console.log("DATA: ",labelData)
       var actionData = {}
       var labelName = adapter.key === "nylas" ? labelData.displayName : labelData.name
       actionData[labelName] = {}
@@ -42,10 +43,9 @@ deleteLabel.isMatchingDelta = function(delta) {
 deleteLabel.trialNameFromDelta = function(delta, nylasIdLookup) {
   console.log("delta: ",delta, "nylasidLook: ", nylasIdLookup)
 
-  for (var labelName in nylasIdLookup) {
-    console.log("label name: ", labelName)
-    if (nylasIdLookup[labelName] === delta.id) {
-      return labelName;
+  for (var labelKey in nylasIdLookup) {
+    if (nylasIdLookup[labelKey] === delta.id) {
+      return labelKey;
     }
   }
   throw new Error("XXX> Couldn't find label with ID of "+delta.id)
