@@ -63,7 +63,7 @@ module.exports = {
       resource: {name: newName}
     })
   },
-  addMessage: function(remoteData, date) {
+  moveMessage: function(remoteData, date) {
     return gmail.users.messages.insert({userId: "me", resource: {raw: base64("encode me"), labelIds: [remoteData.id]}})
   },
   sendMessages

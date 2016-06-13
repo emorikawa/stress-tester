@@ -10,21 +10,22 @@ for (var i = 0; i < NUM_LABELS; i++) {
 var createLabel = require('./actions/create-label.js')
 var updateLabel = require('./actions/update-label.js')
 var deleteLabel = require('./actions/delete-label.js')
-var addMessage = require('./actions/add-message.js')
+var moveMessage = require('./actions/move-message.js')
 var config = {
   actions: [],
   trialKeys: trialKeys,
   adapterKeys: ["imap"],
   labelPrefix: LABEL_PREFIX,
   //actionTimeout: 1000 * 60 * 1 // 1 minute,
-  actionTimeout: 100000
+  actionTimeout: 10000
 }
 
 
 process.argv.forEach(function(val) {
-  if(val === "c") config.actions.push(createLabel)
-  else if (val === "d") config.actions.push(deleteLabel)
-  else if(val === "u") config.actions.push(updateLabel)
+  if(val === "create") config.actions.push(createLabel)
+  else if (val === "delete") config.actions.push(deleteLabel)
+  else if(val === "update") config.actions.push(updateLabel)
+  else if(val == "move") config.actions.push(moveMessage)
 })
 
 module.exports = config

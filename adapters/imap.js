@@ -88,11 +88,10 @@ module.exports = {
     })
     return retryImapIfTimeout(p)
   },
-  addMessage: function(remoteData, date){
+  moveMessage: function(source, remoteData){
     var p = new Promise(function(resolve, reject){
-      imap.append("hello", {mailbox: remoteData.name}, function(err) {
+      imap.move(source, remoteData.name, function(err) {
         if (err) {
-          console.log(err);
           return reject(err)}
         else {resolve()}
       })
@@ -115,4 +114,23 @@ module.exports = {
     });
     return retryImapIfTimeout(p)
   },
+  listMessages: function(criteriaArr) {
+    var p = new Promise(function(resolve, reject) {
+      imap.search(criteriaArr, function(err, messagesArr) {
+        console.log(messagesArr)
+        if (err) return reject(err)
+        return resolve(messagesArr)
+      })
+    })
+    return retryImapIfTimeout(p)
+  },
+  openLabel: function(name) {
+    var p = new Promise(function(resolve, reject) {
+      imap.openBox(name, false, function(err, box) {
+        if (err) return reject(err)
+        return resolve(box)
+      })
+    })
+    return retryImapIfTimeout(p)
+  }
 }

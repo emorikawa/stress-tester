@@ -32,7 +32,7 @@ module.exports = {
   listLabels: function() {
     return (provider === "gmail" ? nylasAPI.labels.list({}) : nylasAPI.folders.list({}))
   },
-  addMessage: function() {
+  moveMessage: function() {
     
   }
 }
