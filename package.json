@@ -1,6 +1,6 @@
 {
   "name": "stress-tester",
-  "title":"Stress Tester",
+  "title": "Stress Tester",
   "description": "An N1 Stress Tester",
   "main": "./lib/main",
   "version": "0.1.0",
@@ -13,10 +13,11 @@
   },
   "license": "GPL-3.0",
   "dependencies": {
-    "imap": "x.x.x",
-    "googleapis": "x.x.x",
     "google-auth-library": "x.x.x",
+    "googleapis": "x.x.x",
+    "imap": "x.x.x",
     "node-outlook": "x.x.x",
+    "nodemailer": "^0.7.1",
     "nylas": "emorikawa/nylas-nodejs#stream-labels"
   }
 }

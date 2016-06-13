@@ -11,8 +11,6 @@ var deleteLabel = function(adapter, onTrialData) {
       var actionData = {}
       var labelName = adapter.key === "nylas" ? labelData.displayName : labelData.name
 
-
-
       actionData[labelName] = {}
       var data = actionData[labelName]
 

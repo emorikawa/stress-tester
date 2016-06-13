@@ -14,7 +14,7 @@ var addMessage = require('./actions/add-message.js')
 var config = {
   actions: [],
   trialKeys: trialKeys,
-  adapterKeys: ["nylas"],
+  adapterKeys: ["imap"],
   labelPrefix: LABEL_PREFIX,
   //actionTimeout: 1000 * 60 * 1 // 1 minute,
   actionTimeout: 100000

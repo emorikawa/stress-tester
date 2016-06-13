@@ -3,11 +3,7 @@ var createLabel = function(adapter, onTrialData, adapterDataClone, config) {
 
   var promiseChain = Promise.resolve();
   var errors = []
-//create labelKey
-//use this as key
-//set displayName initialized to labelKey
 
-//find and replace labelName in some places
   config.trialKeys.forEach(function(labelKey) {
     var actionData = {}
     actionData[labelKey] = {}
