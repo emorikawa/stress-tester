@@ -114,9 +114,9 @@ module.exports = {
     });
     return retryImapIfTimeout(p)
   },
-  listMessages: function(criteriaArr) {
+  listMessages: function(criteriaObj) {
     var p = new Promise(function(resolve, reject) {
-      imap.search(criteriaArr, function(err, messagesArr) {
+      imap.search([['FROM', criteriaObj.from]], function(err, messagesArr) {
         console.log(messagesArr)
         if (err) return reject(err)
         return resolve(messagesArr)

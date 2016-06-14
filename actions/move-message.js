@@ -3,7 +3,7 @@ var moveMessage = function(adapter, onTrialData){
   var labelPrefix = require('../config.js').labelPrefix
 
 
-  var FROM = adapter.name === "IMAP" ? "n1stresstester@gmail.com" : "etmorikawa@yahoo.com"
+  var FROM = adapter.name === "IMAP" || adapter.name === "nylas" ? "n1stresstester@gmail.com" : "etmorikawa@yahoo.com"
 
 
   return adapter.listLabels().then(function(labels){
@@ -13,7 +13,7 @@ var moveMessage = function(adapter, onTrialData){
     })
     return adapter.openLabel('INBOX')
     .then(function(box){
-     return  adapter.listMessages([['FROM', FROM]], box)
+     return  adapter.listMessages({'from': FROM}, box)
     })
     .then(function(messageArr){
 
@@ -58,10 +58,13 @@ moveMessage.isMatchingDelta = function(delta){
   return delta.event === "modify" && delta.object === "message"
 }
 
-moveMessage.trialKeyFromDelta = function(delta){
-  var keyName = delta.attributes.display_name;
-  var parts = keyName.split("\\");
-  keyName = parts[parts.length - 1]
-  return keyName
+moveMessage.trialKeyFromDelta = function(delta, nylasIdLookup){
+  for (var labelKey in nylasIdLookup) {
+    if(nylasIdLookup[labelKey].nylasId === delta.id) {
+      return labelKey
+    }
+  }
+  throw new Error("XXX> Couldn't find and update label with ID of "+delta.id)
+
 }
 module.exports = moveMessage

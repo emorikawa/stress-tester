@@ -11,7 +11,7 @@ if (process.argv[2] === "cleanup") {
   })
 } else if(process.argv[2] == "send") {
   //to send messages: node main.js send FROM TO -- example: node main.js send Gmail Yahoo
-  require('./send.js')(process.argv[3], process.argv[4]).then(function(){
+  require('./send.js').sendMessages(process.argv[3], process.argv[4]).then(function(){
     process.exit()
   })
 }  else {

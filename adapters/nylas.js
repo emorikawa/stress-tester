@@ -32,7 +32,15 @@ module.exports = {
   listLabels: function() {
     return (provider === "gmail" ? nylasAPI.labels.list({}) : nylasAPI.folders.list({}))
   },
-  moveMessage: function() {
-    
+  moveMessage: function(msgId, remoteData) {
+    var msg = nylasAPI.messages.find(msgId)
+    msg.folder = remoteData.id
+    return msg.save()
+  },
+  openLabel: function() {
+    return Promise.resolve()
+  },
+  listMessages: function(criteriaObj) {
+    return nylasAPI.messages.where(criteriaObj)
   }
 }

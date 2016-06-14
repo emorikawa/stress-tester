@@ -1,6 +1,10 @@
 var nodemailer = require('nodemailer')
+var subj = "Move # "
 
-module.exports  = function(fromProvider, toProvider) {
+
+module.exports
+
+var sending  = function(fromProvider, toProvider) {
   console.log("---> Sending messages from " + fromProvider + " to " + toProvider)
 
   var To;
@@ -24,14 +28,14 @@ module.exports  = function(fromProvider, toProvider) {
   console.log("From: ", From)
   console.log("To: ", To)
 
-  var nums = [0,1,2,3,4]
+  var nums = Array.from({length: 20}, (v, k) => k);  
   return Promise.all(nums.map(function(n){
      return new Promise (function(resolve, reject) {
        transport.sendMail({
       from: "<" + From + ">",
       to: "<" + To + ">",
-      subject: "Test #" + n,
-      text: "howdy " + n
+      subject:  + n,
+      text: "hi "+ n
     }, function(err) {
       if (err) return reject(err)
       else resolve()
@@ -39,4 +43,8 @@ module.exports  = function(fromProvider, toProvider) {
     })
   }))
 
+}
+module.exports = {
+  sendMessages: sending,
+  subject: subj
 }
