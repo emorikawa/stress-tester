@@ -1,6 +1,7 @@
 var fs = require('fs');
 var path = require('path');
 var base64 = require('base64url')
+var bluebird = require('bluebird')
 
 var configDir = path.join(process.env.HOME, ".credentials")
 
@@ -33,6 +34,13 @@ toPromise.map(function(gmailObj) {
 })
 
 
+var getFrom = function (messagePayload){
+  var emailArr = messagePayload.filter(function(header) {
+    return (header['name'] === 'From')
+  })
+  return emailArr
+}
+
 module.exports = {
   key: "gmail",
   name: "Gmail API",
@@ -54,8 +62,15 @@ module.exports = {
       return Promise.resolve(data)
     })
   },
-  listMessages: function(remoteData) {
-    return gmail.users.messages.list({resource: {labelsIds: remoteData.id}})
+  listMessages: function(criteriaObj) {
+    return gmail.users.messages.list({labelIds : 'UNREAD'})
+    .then(function(messageArr){
+      var ids = []
+      messageArr.messages.map(function(message){
+        ids.push(message.id)
+      })
+      return ids;
+    })
   },
   updateLabel: function(newName, remoteData) {
     return gmail.users.labels.update({
@@ -63,8 +78,11 @@ module.exports = {
       resource: {name: newName}
     })
   },
-  moveMessage: function(remoteData, date) {
-    return gmail.users.messages.insert({userId: "me", resource: {raw: base64("encode me"), labelIds: [remoteData.id]}})
+  openLabel: function(){
+    return Promise.resolve()
   },
-  sendMessages
+  moveMessage: function(source, remoteData) {
+    return gmail.users.messages.modify({userId:'me', id: source, resource: {addLabelIds: [remoteData.id]}})
+  },
+
 }

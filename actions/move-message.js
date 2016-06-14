@@ -3,7 +3,7 @@ var moveMessage = function(adapter, onTrialData){
   var labelPrefix = require('../config.js').labelPrefix
 
 
-  var FROM = adapter.name === "IMAP" || adapter.name === "nylas" ? "n1stresstester@gmail.com" : "etmorikawa@yahoo.com"
+  var FROM = (adapter.name === "IMAP" || adapter.name === "nylas") ? "n1stresstester@gmail.com" : "etmorikawa@yahoo.com"
 
 
   return adapter.listLabels().then(function(labels){
@@ -16,7 +16,6 @@ var moveMessage = function(adapter, onTrialData){
      return  adapter.listMessages({'from': FROM}, box)
     })
     .then(function(messageArr){
-
       return Promise.all(labelList.map(function(labelData){
         var actionData = {}
         var labelName = labelData.name

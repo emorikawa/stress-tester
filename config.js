@@ -14,7 +14,7 @@ var moveMessage = require('./actions/move-message.js')
 var config = {
   actions: [],
   trialKeys: trialKeys,
-  adapterKeys: ["IMAP"],
+  adapterKeys: ["Gmail"],
   labelPrefix: LABEL_PREFIX,
   //actionTimeout: 1000 * 60 * 1 // 1 minute,
   actionTimeout: 10000
