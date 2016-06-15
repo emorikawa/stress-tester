@@ -1,7 +1,6 @@
 var fs = require('fs');
 var path = require('path');
 var base64 = require('base64url')
-var bluebird = require('bluebird')
 
 var configDir = path.join(process.env.HOME, ".credentials")
 

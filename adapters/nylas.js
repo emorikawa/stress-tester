@@ -26,21 +26,43 @@ module.exports = {
     return (provider === "gmail" ? nylasAPI.labels.delete(remoteData.id) : nylasAPI.folders.delete(remoteData.id))
   },
   updateLabel: function(newName, remoteData) {
-    remoteData.displayName = newName
-    return remoteData.save()
+    remoteData.name = newName
+    return Promise.resolve()
   },
   listLabels: function() {
-    return (provider === "gmail" ? nylasAPI.labels.list({}) : nylasAPI.folders.list({}))
+    if(provider === "imap"){
+      return nylasAPI.folders.list({}).then(function(folderArr){
+        var prettyFoldArr = []
+        folderArr.map(function(folder){
+          prettyFoldArr.push({name: folder.displayName, id: folder.id})
+        })
+        return prettyFoldArr
+      })
+    }
+    else if(provider ==="gmail") return nylasAPI.labels.list({})
+    else (console.log("ADD PROVIDER: ", provider))
   },
   moveMessage: function(msgId, remoteData) {
-    var msg = nylasAPI.messages.find(msgId)
-    msg.folder = remoteData.id
-    return msg.save()
+    return nylasAPI.messages.find(msgId).then(function(msg){
+      if (provider === "gmail") {
+        msg.labels.push(remoteData.id)
+      } else {
+        msg.folder = remoteData.id
+      }
+      return msg.save()
+    })
   },
   openLabel: function() {
     return Promise.resolve()
   },
   listMessages: function(criteriaObj) {
-    return nylasAPI.messages.where(criteriaObj)
+    return nylasAPI.messages.list({from: criteriaObj.from})
+    .then(function(messageArr){
+      var msgIds = []
+      messageArr.map(function(msg){
+        msgIds.push(msg.id)
+      })
+      return msgIds
+    })
   }
 }

@@ -5,11 +5,11 @@ var deleteLabel = function(adapter, onTrialData) {
   return adapter.listLabels().then(function(labels) {
     var toDelete = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
-      return (prefixRe.test(adapter.key === "nylas" ? labelData.displayName : labelData.name))
+      return (prefixRe.test(labelData.name))
     })
     return Promise.all(toDelete.map(function(labelData){
       var actionData = {}
-      var labelName = adapter.key === "nylas" ? labelData.displayName : labelData.name
+      var labelName = labelData.name
 
       actionData[labelName] = {}
       var data = actionData[labelName]
