@@ -7,7 +7,7 @@ var nylasAPI = null;
 var currentStream = null;
 
 //*** switch out depending on provider -- there is a probs better way to do this
-var provider = "gmail"
+var provider = "imap"
 
 module.exports = {
   key: "nylas",
@@ -62,7 +62,9 @@ module.exports = {
     else (console.log("ADD PROVIDER: ", provider))
   },
   moveMessage: function(msgId, remoteData) {
+    // console.log(remoteData)
     return nylasAPI.messages.find(msgId).then(function(msg){
+      console.log(msg)
       if (provider === "gmail") {
         return nylasAPI.labels.find(remoteData.id).then(function(label){
           msg.labels.push(label)
@@ -70,7 +72,7 @@ module.exports = {
         })
       } else {
         return nylasAPI.folders.find(remoteData.id).then(function(folder){
-          msg.folders.push(folder)
+          msg.folder = folder
           return msg.save()
         })
       }
