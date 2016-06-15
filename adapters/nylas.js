@@ -7,7 +7,7 @@ var nylasAPI = null;
 var currentStream = null;
 
 //*** switch out depending on provider -- there is a probs better way to do this
-var provider = "imap"
+var provider = "gmail"
 
 module.exports = {
   key: "nylas",
@@ -26,8 +26,19 @@ module.exports = {
     return (provider === "gmail" ? nylasAPI.labels.delete(remoteData.id) : nylasAPI.folders.delete(remoteData.id))
   },
   updateLabel: function(newName, remoteData) {
-    remoteData.name = newName
-    return Promise.resolve()
+    if(provider === "imap"){
+      return nylasAPI.folders.find(remoteData.id).then(function(folder){
+        folder.displayName = newName
+        return folder.save()
+      })
+    }else if(provider ==="gmail") {
+      return nylasAPI.labels.find(remoteData.id).then(function(label){
+        label.displayName = newName
+        return label.save()
+      })
+    } else {
+      console.log("ADD PROVIDER: ", provider)
+    }
   },
   listLabels: function() {
     if(provider === "imap"){
@@ -39,17 +50,30 @@ module.exports = {
         return prettyFoldArr
       })
     }
-    else if(provider ==="gmail") return nylasAPI.labels.list({})
+    else if(provider ==="gmail") {
+      return nylasAPI.labels.list({}).then(function(labelArr){
+        var prettyArr = []
+        labelArr.map(function(label){
+          prettyArr.push({name: label.displayName, id: label.id})
+        })
+        return prettyArr
+      })
+    }
     else (console.log("ADD PROVIDER: ", provider))
   },
   moveMessage: function(msgId, remoteData) {
     return nylasAPI.messages.find(msgId).then(function(msg){
       if (provider === "gmail") {
-        msg.labels.push(remoteData.id)
+        return nylasAPI.labels.find(remoteData.id).then(function(label){
+          msg.labels.push(label)
+          return msg.save()
+        })
       } else {
-        msg.folder = remoteData.id
+        return nylasAPI.folders.find(remoteData.id).then(function(folder){
+          msg.folders.push(folder)
+          return msg.save()
+        })
       }
-      return msg.save()
     })
   },
   openLabel: function() {

@@ -7,7 +7,6 @@ var updateLabel = function(adapter, onTrialData, config) {
   var now = Date.now()
   var count = 0
   return adapter.listLabels().then(function(labels) {
-    console.log("labels: ", labels)
     var toRename = labels.filter(function(labelData){
       var prefixRe = new RegExp(labelPrefix, 'gi')
       return (prefixRe.test(labelData.name))
