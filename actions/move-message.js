@@ -58,6 +58,7 @@ moveMessage.isMatchingDelta = function(delta){
 }
 
 moveMessage.trialKeyFromDelta = function(delta, nylasIdLookup){
+  console.log("move delta: ", delta, " nylasIdLook: ", nylasIdLookup)
   for (var labelKey in nylasIdLookup) {
     if(nylasIdLookup[labelKey].nylasId === delta.id) {
       return labelKey

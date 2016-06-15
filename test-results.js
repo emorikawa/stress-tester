@@ -92,10 +92,11 @@ var TestResults = (function() {
       if (trialKey && delta.attributes && delta.attributes.id) {
         this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey] = {
           nylasId: delta.attributes.id,
+          newName: trialKey
         }
       }
     }
-    if(delta.event = "update" && delta.attributes) {
+    if((delta.event === "modify") && delta.attributes) {
       this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey].newName = delta.attributes.display_name
     }
 
