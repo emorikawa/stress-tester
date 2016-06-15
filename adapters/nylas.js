@@ -62,7 +62,6 @@ module.exports = {
     else (console.log("ADD PROVIDER: ", provider))
   },
   moveMessage: function(msgId, remoteData) {
-    // console.log(remoteData)
     return nylasAPI.messages.find(msgId).then(function(msg){
       console.log(msg)
       if (provider === "gmail") {

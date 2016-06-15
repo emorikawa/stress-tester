@@ -48,7 +48,6 @@ createLabel.trialKeyFromDelta = function(delta) {
   var keyName = delta.attributes.display_name;
   var parts = keyName.split("\\");
   keyName = parts[parts.length - 1]
-  console.log("create key: ", keyName)
   return keyName
 }
 

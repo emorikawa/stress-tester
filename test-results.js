@@ -96,7 +96,7 @@ var TestResults = (function() {
         }
       }
     }
-    if((delta.event === "modify") && delta.attributes) {
+    if(delta.event === "modify" && delta.attributes) {
       this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey].newName = delta.attributes.display_name
     }
 
