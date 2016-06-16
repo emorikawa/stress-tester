@@ -96,18 +96,22 @@ var TestResults = (function() {
         }
       }
     }
-    if(delta.event === "modify" && delta.attributes) {
+    if(delta.event === "modify" && delta.attributes && trialKey) {
       this.testResults[this.currentAdapter.key]["nylasIdLookup"][trialKey].newName = delta.attributes.display_name
     }
 
-    var now = Date.now();
-    trialData[trialKey].deltaAt = now
-    trialData[trialKey].deltaTime = now - trialData[trialKey].trialStart
-    console.log("**** DELTA: "+this.currentAction.key+" '"+trialKey+"' "+trialData[trialKey].deltaTime+" ms since "+this.currentAdapter.key+" start")
+    if(trialKey){
+      var now = Date.now();
+      trialData[trialKey].deltaAt = now
+      trialData[trialKey].deltaTime = now - trialData[trialKey].trialStart
+      console.log("**** DELTA: "+this.currentAction.key+" '"+trialKey+"' "+trialData[trialKey].deltaTime+" ms since "+this.currentAdapter.key+" start")
+    }
   }
 
 
   TestResults.prototype.waitForDeltas = function(adapter, action, actionTimeout) {
+    //dont wait for move message deltas
+    if (action.key === "moveMessage") return;
     var self = this;
     return new Promise(function(resolve, reject) {
       var tint = setInterval(function(){

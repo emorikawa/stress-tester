@@ -15,7 +15,7 @@ var config = {
   actions: [],
   trialKeys: trialKeys,
   //nylas, Gmail, IMAP
-  adapterKeys: ["IMAP"],
+  adapterKeys: ["nylas"],
   labelPrefix: LABEL_PREFIX,
   actionTimeout: 1000 * 60 * 1 // 1 minute,
 }

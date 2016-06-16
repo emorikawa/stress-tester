@@ -62,7 +62,7 @@ module.exports = {
     })
   },
   listMessages: function(criteriaObj) {
-    return gmail.users.messages.list({labelIds : 'UNREAD'})
+    return gmail.users.messages.list({labelIds :'UNREAD', 'q': 'from='+ criteriaObj.from})
     .then(function(messageArr){
       var ids = []
       messageArr.messages.map(function(message){

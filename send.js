@@ -2,8 +2,6 @@ var nodemailer = require('nodemailer')
 var subj = "Move # "
 
 
-module.exports
-
 var sending  = function(fromProvider, toProvider) {
   console.log("---> Sending messages from " + fromProvider + " to " + toProvider)
 
@@ -28,7 +26,7 @@ var sending  = function(fromProvider, toProvider) {
   console.log("From: ", From)
   console.log("To: ", To)
 
-  var nums = Array.from({length: 20}, (v, k) => k);  
+  var nums = Array.from({length: 20}, (v, k) => k);
   return Promise.all(nums.map(function(n){
      return new Promise (function(resolve, reject) {
        transport.sendMail({
